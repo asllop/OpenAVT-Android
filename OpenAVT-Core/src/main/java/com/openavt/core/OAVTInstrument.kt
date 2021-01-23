@@ -169,4 +169,17 @@ class OAVTInstrument() {
             tracker.instrumentReady(this)
         }
     }
+
+    /**
+     * Tell the instrument chain the job is done and we are shutting down.
+     * It calls the `endOfService` method of all chain components (trackers, hub, metricalc and backend).
+     */
+    fun shutdown() {
+        for ((_, tracker) in this.trackers) {
+            tracker.endOfService()
+        }
+        this.hub?.let { it.endOfService() }
+        this.metricalc?.let { it.endOfService() }
+        this.backend?.let { it.endOfService() }
+    }
 }

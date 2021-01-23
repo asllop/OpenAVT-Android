@@ -22,7 +22,7 @@ class AnyHub : OAVTHubInterface {
     }
 
     override fun endOfService() {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyHub endOfService")
     }
 
 }
@@ -41,7 +41,7 @@ class AnyBackend : OAVTBackendInterface {
     }
 
     override fun endOfService() {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyBackend endOfService")
     }
 }
 
@@ -55,7 +55,7 @@ class AnyMetricalc : OAVTMetricalcInterface {
     }
 
     override fun endOfService() {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyMetricalc endOfService")
     }
 
 }
@@ -77,7 +77,7 @@ class AnyTracker : OAVTTrackerInterface {
     }
 
     override fun endOfService() {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyTracker endOfService from Id = " + trackerId)
     }
 
 }
@@ -91,5 +91,7 @@ class MainActivity : AppCompatActivity() {
         instrument.addTracker(AnyTracker())
         instrument.addTracker(AnyTracker())
         instrument.ready()
+
+        instrument.shutdown()
     }
 }
