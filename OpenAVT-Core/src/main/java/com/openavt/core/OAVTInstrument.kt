@@ -4,6 +4,7 @@ import android.util.Log
 import com.openavt.core.interfaces.OAVTBackendInterface
 import com.openavt.core.interfaces.OAVTHubInterface
 import com.openavt.core.interfaces.OAVTMetricalcInterface
+import com.openavt.core.interfaces.OAVTTrackerInterface
 import java.util.*
 
 /**
@@ -15,6 +16,8 @@ class OAVTInstrument() {
     private var hub : OAVTHubInterface? = null
     private var metricalc : OAVTMetricalcInterface? = null
     private var backend : OAVTBackendInterface? = null
+    private var trackers : MutableMap<Int, OAVTTrackerInterface> = mutableMapOf()
+    private var nextTrackerId : Int = 0
 
     /**
      * Init a new OAVTInstrument.
@@ -34,6 +37,7 @@ class OAVTInstrument() {
         setBackend(backend)
         Log.d("OAVT", "Instrument init with hub and backend")
     }
+
     /**
      * Init a new OAVTInstrument, providing hub, metricalc and backend.
      *
@@ -41,10 +45,8 @@ class OAVTInstrument() {
      * @param metricalc Metricalc. An object conforming to `OAVTMetricalcInterface`
      * @param backend Backend. An object conforming to `OAVTBackendInterface`
      */
-    constructor(hub: OAVTHubInterface, metricalc: OAVTMetricalcInterface, backend: OAVTBackendInterface): this() {
-        setHub(hub)
+    constructor(hub: OAVTHubInterface, metricalc: OAVTMetricalcInterface, backend: OAVTBackendInterface): this(hub, backend) {
         setMetricalc(metricalc)
-        setBackend(backend)
         Log.d("OAVT", "Instrument init with hub, metricalc and backend")
     }
 
@@ -78,7 +80,82 @@ class OAVTInstrument() {
         this.backend = backend
     }
 
-    // TODO: Tracker stuff
+    /**
+     * Add a tracker instance.
+     *
+     * @param tracker An object conforming to OAVTTrackerProtocol.
+     * @return The Tracker ID.
+     */
+    fun addTracker(tracker: OAVTTrackerInterface): Int {
+        val trackerId = this.nextTrackerId++
+        tracker.trackerId = trackerId
+        this.trackers[trackerId] = tracker
+        return trackerId
+    }
+
+    /**
+     * Remove a tracker.
+     *
+     * @param trackerId: Tracker ID.
+     * @param True if removed, False otherwise.
+     */
+    fun removeTracker(trackerId: Int): Boolean {
+        if (this.trackers[trackerId] != null) {
+            val tracker = this.trackers[trackerId]
+            tracker!!.endOfService()
+            this.trackers.remove(trackerId)
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
+    /**
+     * Get the list of trackers.
+     *
+     * @return Map of trackers, using tracker ID as a key.
+     */
+    fun getTrackers(): Map<Int, OAVTTrackerInterface> {
+        return this.trackers
+    }
+
+    /**
+     * Get one specific tracker.
+     *
+     * @param trackerId Tracker ID
+     * @return A tracker.
+     */
+    fun getTracker(trackerId: Int): OAVTTrackerInterface? {
+        return trackers[trackerId]
+    }
+
+    /**
+     * Get the hub.
+     *
+     * @return A hub.
+     */
+    fun getHub(): OAVTHubInterface? {
+        return this.hub
+    }
+
+    /**
+     * Get the metricalc.
+     *
+     * @return A metricalc.
+     */
+    fun getMetricalc(): OAVTMetricalcInterface? {
+        return this.metricalc
+    }
+
+    /**
+     * Get the backend.
+     *
+     * @return A backend.
+     */
+    fun getBackend(): OAVTBackendInterface? {
+        return this.backend
+    }
 
     /**
      * Tell the instrument chain everything is ready to start.
@@ -88,6 +165,8 @@ class OAVTInstrument() {
         this.backend?.let { it.instrumentReady(this) }
         this.metricalc?.let { it.instrumentReady(this) }
         this.hub?.let { it.instrumentReady(this) }
-        //TODO: init trackers
+        for ((_, tracker) in this.trackers) {
+            tracker.instrumentReady(this)
+        }
     }
 }
