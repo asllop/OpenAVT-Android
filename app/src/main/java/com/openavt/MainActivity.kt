@@ -88,9 +88,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val instrument = OAVTInstrument(hub = AnyHub(), metricalc = AnyMetricalc(), backend = AnyBackend())
-        instrument.addTracker(AnyTracker())
-        instrument.addTracker(AnyTracker())
+        val trackerId0 = instrument.addTracker(AnyTracker())
+        val trackerId1 = instrument.addTracker(AnyTracker())
         instrument.ready()
+
+        instrument.removeTracker(trackerId1)
 
         instrument.shutdown()
     }
