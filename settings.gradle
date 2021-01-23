@@ -1,0 +1,3 @@
+include ':OpenAVT-Core'
+include ':app'
+rootProject.name = "OpenAVT-Android"
