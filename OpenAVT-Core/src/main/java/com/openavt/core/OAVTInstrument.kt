@@ -5,6 +5,8 @@ import com.openavt.core.interfaces.OAVTBackendInterface
 import com.openavt.core.interfaces.OAVTHubInterface
 import com.openavt.core.interfaces.OAVTMetricalcInterface
 import com.openavt.core.interfaces.OAVTTrackerInterface
+import com.openavt.core.models.OAVTAction
+import com.openavt.core.models.OAVTEvent
 import java.util.*
 
 /**
@@ -181,5 +183,50 @@ class OAVTInstrument() {
         this.hub?.let { it.endOfService() }
         this.metricalc?.let { it.endOfService() }
         this.backend?.let { it.endOfService() }
+    }
+
+    //TODO: Ping stuff
+
+    /**
+     * Emit an event.
+     * It generates an `OAVTEvent` using the specified action and emits it using the specified tracker.
+     *
+     * @param action Action.
+     * @param trackerId Tracker ID.
+     */
+    fun emit(action: OAVTAction, trackerId: Int) {
+        getTracker(trackerId)?.let { emit(action, it) }
+    }
+
+    /**
+     * Emit an event.
+     * It generates an `OAVTEvent` using the specified action and emits it using the specified tracker.
+     *
+     * @param action Action.
+     * @param tracker Tracker.
+     */
+    fun emit(action: OAVTAction, tracker: OAVTTrackerInterface) {
+        val event = generateEvent(action, tracker)
+
+        var trackerEvent = tracker.initEvent(event)
+        if (trackerEvent != null && this.hub != null) {
+            trackerEvent = this.hub!!.processEvent(trackerEvent, tracker)
+            if (trackerEvent != null && this.backend != null) {
+                if (this.metricalc != null) {
+                    for (metric in this.metricalc!!.processMetric(trackerEvent!!, tracker)) {
+                        this.backend!!.sendMetric(metric)
+                    }
+                }
+
+                this.backend!!.sendEvent(trackerEvent)
+
+                //TODO: set timeSince
+            }
+        }
+    }
+
+    private fun generateEvent(action: OAVTAction, tracker: OAVTTrackerInterface): OAVTEvent {
+        //TODO
+        return OAVTEvent()
     }
 }

@@ -8,13 +8,15 @@ import com.openavt.core.interfaces.OAVTBackendInterface
 import com.openavt.core.interfaces.OAVTHubInterface
 import com.openavt.core.interfaces.OAVTMetricalcInterface
 import com.openavt.core.interfaces.OAVTTrackerInterface
+import com.openavt.core.models.OAVTAction
 import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTMetric
 import com.openavt.core.models.OAVTState
 
 class AnyHub : OAVTHubInterface {
     override fun processEvent(event: OAVTEvent, tracker: OAVTTrackerInterface): OAVTEvent? {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyHub processEvent")
+        return event
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
@@ -29,11 +31,11 @@ class AnyHub : OAVTHubInterface {
 
 class AnyBackend : OAVTBackendInterface {
     override fun sendEvent(event: OAVTEvent) {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyBackend sendEvent")
     }
 
     override fun sendMetric(metric: OAVTMetric) {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyBackend sendMetric")
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
@@ -47,7 +49,8 @@ class AnyBackend : OAVTBackendInterface {
 
 class AnyMetricalc : OAVTMetricalcInterface {
     override fun processMetric(event: OAVTEvent, tracker: OAVTTrackerInterface): Array<OAVTMetric> {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyMetricalc processMetric")
+        return arrayOf(OAVTMetric(), OAVTMetric())
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
@@ -61,15 +64,18 @@ class AnyMetricalc : OAVTMetricalcInterface {
 }
 
 class AnyTracker : OAVTTrackerInterface {
+    private val state = OAVTState()
 
     override var trackerId: Int? = null
 
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyTracker initEvent from Id = " + trackerId)
+        return event
     }
 
     override fun getState(): OAVTState {
-        TODO("Not yet implemented")
+        Log.d("OAVT",  "AnyTracker getState from Id = " + trackerId)
+        return state
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
@@ -93,6 +99,8 @@ class MainActivity : AppCompatActivity() {
         instrument.ready()
 
         instrument.removeTracker(trackerId1)
+
+        instrument.emit(OAVTAction(), trackerId0)
 
         instrument.shutdown()
     }
