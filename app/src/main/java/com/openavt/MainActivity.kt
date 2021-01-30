@@ -32,7 +32,7 @@ class AnyBackend : OAVTBackendInterface {
     }
 
     override fun sendMetric(metric: OAVTMetric) {
-        Log.d("OAVT",  "AnyBackend sendMetric")
+        Log.d("OAVT",  "AnyBackend sendMetric = " + metric)
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
@@ -47,7 +47,10 @@ class AnyBackend : OAVTBackendInterface {
 class AnyMetricalc : OAVTMetricalcInterface {
     override fun processMetric(event: OAVTEvent, tracker: OAVTTrackerInterface): Array<OAVTMetric> {
         Log.d("OAVT",  "AnyMetricalc processMetric")
-        return arrayOf(OAVTMetric(), OAVTMetric())
+        return arrayOf(
+                OAVTMetric("metricX", OAVTMetric.MetricType.Counter, 10),
+                OAVTMetric("metricY", OAVTMetric.MetricType.Gauge, 9.9999)
+        )
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
