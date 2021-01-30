@@ -2,6 +2,10 @@ package com.openavt.core.models
 
 /**
  * An OpenAVT metric.
+ *
+ * @param name Metric name
+ * @param type Metric type
+ * @param value Metric value
  */
 open class OAVTMetric(name: String, type: MetricType, value: Number): OAVTSample() {
 
