@@ -8,5 +8,5 @@ open class OAVTSample {
     /**
      * Get sample timestamp.
      */
-    var timestamp = System.currentTimeMillis()
+    var timestamp: Long = System.currentTimeMillis()
 }

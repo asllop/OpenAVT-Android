@@ -6,6 +6,7 @@ import com.openavt.core.interfaces.OAVTHubInterface
 import com.openavt.core.interfaces.OAVTMetricalcInterface
 import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.OAVTAction
+import com.openavt.core.models.OAVTAttribute
 import com.openavt.core.models.OAVTEvent
 import java.util.*
 
@@ -20,6 +21,7 @@ class OAVTInstrument() {
     private var backend : OAVTBackendInterface? = null
     private var trackers : MutableMap<Int, OAVTTrackerInterface> = mutableMapOf()
     private var nextTrackerId : Int = 0
+    private var timeSince : MutableMap<OAVTAttribute, Long> = mutableMapOf()
 
     /**
      * Init a new OAVTInstrument.
@@ -220,13 +222,35 @@ class OAVTInstrument() {
 
                 this.backend!!.sendEvent(trackerEvent)
 
-                //TODO: set timeSince
+                // Save action timeSince, only when the event reached the end of the instrument chain
+                timeSince[action.timeAttribute] = System.currentTimeMillis()
             }
         }
     }
 
     private fun generateEvent(action: OAVTAction, tracker: OAVTTrackerInterface): OAVTEvent {
+        val event = OAVTEvent(action)
+
+        // Generate attributes
+        generateSenderId(tracker, event)
+        generateTimeSince(event)
+        generateCustomAttributes(tracker, event)
+
+        return event
+    }
+
+    private fun generateSenderId(tracker: OAVTTrackerInterface, event: OAVTEvent) {
+        event.attributes[OAVTAttribute.SENDER_ID] = instrumentId + "-" + (tracker.trackerId ?: "?")
+    }
+
+    private fun generateTimeSince(event: OAVTEvent) {
+        for ((attr, ts) in timeSince) {
+            val delta =  System.currentTimeMillis() - ts
+            event.attributes[attr] = delta
+        }
+    }
+
+    private fun generateCustomAttributes(tracker: OAVTTrackerInterface, event: OAVTEvent) {
         //TODO
-        return OAVTEvent(action)
     }
 }

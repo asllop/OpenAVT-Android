@@ -102,8 +102,9 @@ class MainActivity : AppCompatActivity() {
 
         instrument.removeTracker(trackerId1)
 
-        instrument.emit(OAVTAction("TEST_ACTION"), trackerId0)
-        instrument.emit(OAVTAction("TEST2_ACTION", OAVTAttribute("timeSinceTest2")), trackerId0)
+        instrument.emit(OAVTAction("TEST_ACTION_ONE"), trackerId0)
+        instrument.emit(OAVTAction("TEST_ACTION_TWO", OAVTAttribute("timeSinceTestTwo")), trackerId0)
+        instrument.emit(OAVTAction("TEST_ACTION_THREE"), trackerId0)
 
         instrument.shutdown()
     }
