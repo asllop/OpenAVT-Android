@@ -19,9 +19,9 @@ class OAVTInstrument() {
     private var hub : OAVTHubInterface? = null
     private var metricalc : OAVTMetricalcInterface? = null
     private var backend : OAVTBackendInterface? = null
-    private var trackers : MutableMap<Int, OAVTTrackerInterface> = mutableMapOf()
+    private val trackers : MutableMap<Int, OAVTTrackerInterface> = mutableMapOf()
     private var nextTrackerId : Int = 0
-    private var timeSince : MutableMap<OAVTAttribute, Long> = mutableMapOf()
+    private val timeSince : MutableMap<OAVTAttribute, Long> = mutableMapOf()
 
     /**
      * Init a new OAVTInstrument.
