@@ -43,20 +43,20 @@ open class OAVTMetric(name: String, type: MetricType, value: Number): OAVTSample
 
     companion object {
         /** Start time metric name. */
-        val START_TIME = "startTime"
+        fun START_TIME(value: Int) = OAVTMetric("startTime", MetricType.Gauge, value)
         /** Number of streams played metric name. */
-        val NUM_PLAYS = "numPlays"
+        fun NUM_PLAYS(value: Int) = OAVTMetric("numPlays", MetricType.Counter, value)
         /** Rebuffer time metric name. */
-        val REBUFFER_TIME = "rebufferTime"
+        fun REBUFFER_TIME(value: Int) = OAVTMetric("rebufferTime", MetricType.Counter, value)
         /** Number of rebufers metric name. */
-        val NUM_REBUFFERS = "numRebuffers"
+        fun NUM_REBUFFERS(value: Int) = OAVTMetric("numRebuffers", MetricType.Counter, value)
         /** Playtime since last event. */
-        val PLAY_TIME = "playTime"
+        fun PLAY_TIME(value: Int) = OAVTMetric("playTime", MetricType.Counter, value)
         /** Number of streams requested metric name. */
-        val NUM_REQUESTS = "numRequests"
+        fun NUM_REQUESTS(value: Int) = OAVTMetric("numRequests", MetricType.Counter, value)
         /** Number of streams loaded metric name. */
-        val NUM_LOADS = "numLoads"
+        fun NUM_LOADS(value: Int) = OAVTMetric("numLoads", MetricType.Counter, value)
         /** Number of streams ended metric name. */
-        val NUM_ENDS = "numEnds"
+        fun NUM_ENDS(value: Int) = OAVTMetric("numEnds", MetricType.Counter, value)
     }
 }

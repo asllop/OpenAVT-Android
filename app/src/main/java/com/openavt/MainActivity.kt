@@ -49,7 +49,8 @@ class AnyMetricalc : OAVTMetricalcInterface {
         Log.d("OAVT",  "AnyMetricalc processMetric")
         return arrayOf(
                 OAVTMetric("metricX", OAVTMetric.MetricType.Counter, 10),
-                OAVTMetric("metricY", OAVTMetric.MetricType.Gauge, 9.9999)
+                OAVTMetric("metricY", OAVTMetric.MetricType.Gauge, 9.9999),
+                OAVTMetric.START_TIME(100)
         )
     }
 
@@ -102,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
         instrument.removeTracker(trackerId1)
 
+        instrument.emit(OAVTAction.PING, trackerId0)
         instrument.emit(OAVTAction("TEST_ACTION_ONE"), trackerId0)
         instrument.emit(OAVTAction("TEST_ACTION_TWO", OAVTAttribute("timeSinceTestTwo")), trackerId0)
         instrument.emit(OAVTAction("TEST_ACTION_THREE"), trackerId0)
