@@ -227,6 +227,6 @@ class OAVTInstrument() {
 
     private fun generateEvent(action: OAVTAction, tracker: OAVTTrackerInterface): OAVTEvent {
         //TODO
-        return OAVTEvent()
+        return OAVTEvent(action)
     }
 }

@@ -8,10 +8,7 @@ import com.openavt.core.interfaces.OAVTBackendInterface
 import com.openavt.core.interfaces.OAVTHubInterface
 import com.openavt.core.interfaces.OAVTMetricalcInterface
 import com.openavt.core.interfaces.OAVTTrackerInterface
-import com.openavt.core.models.OAVTAction
-import com.openavt.core.models.OAVTEvent
-import com.openavt.core.models.OAVTMetric
-import com.openavt.core.models.OAVTState
+import com.openavt.core.models.*
 
 class AnyHub : OAVTHubInterface {
     override fun processEvent(event: OAVTEvent, tracker: OAVTTrackerInterface): OAVTEvent? {
@@ -31,7 +28,7 @@ class AnyHub : OAVTHubInterface {
 
 class AnyBackend : OAVTBackendInterface {
     override fun sendEvent(event: OAVTEvent) {
-        Log.d("OAVT",  "AnyBackend sendEvent")
+        Log.d("OAVT",  "AnyBackend sendEvent = " + event)
     }
 
     override fun sendMetric(metric: OAVTMetric) {
@@ -70,6 +67,8 @@ class AnyTracker : OAVTTrackerInterface {
 
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
         Log.d("OAVT",  "AnyTracker initEvent from Id = " + trackerId)
+        event.attributes[OAVTAttribute.TITLE] = "Space balls"
+        event.attributes[OAVTAttribute.VOLUME] = 100
         return event
     }
 
@@ -100,7 +99,8 @@ class MainActivity : AppCompatActivity() {
 
         instrument.removeTracker(trackerId1)
 
-        instrument.emit(OAVTAction(), trackerId0)
+        instrument.emit(OAVTAction("TEST_ACTION"), trackerId0)
+        instrument.emit(OAVTAction("TEST2_ACTION", OAVTAttribute("timeSinceTest2")), trackerId0)
 
         instrument.shutdown()
     }
