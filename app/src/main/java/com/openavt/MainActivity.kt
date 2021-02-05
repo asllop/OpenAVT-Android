@@ -101,12 +101,23 @@ class MainActivity : AppCompatActivity() {
         val trackerId1 = instrument.addTracker(AnyTracker())
         instrument.ready()
 
-        instrument.removeTracker(trackerId1)
+        instrument.addAttribute(OAVTAttribute("attrAll"), 1000)
+        instrument.addAttribute(OAVTAttribute("attrForAction"), 1000, OAVTAction("TEST_ACTION_ONE"))
+        instrument.addAttribute(OAVTAttribute("attrForTracker"), 1000, trackerId = trackerId1)
 
         instrument.emit(OAVTAction.PING, trackerId0)
         instrument.emit(OAVTAction("TEST_ACTION_ONE"), trackerId0)
         instrument.emit(OAVTAction("TEST_ACTION_TWO", OAVTAttribute("timeSinceTestTwo")), trackerId0)
         instrument.emit(OAVTAction("TEST_ACTION_THREE"), trackerId0)
+        Log.d("OAVT",  "------------------------------------------------------------------------------")
+        instrument.emit(OAVTAction("TEST_ACTION_ONE"), trackerId1)
+        instrument.emit(OAVTAction("TEST_ACTION_TWO"), trackerId1)
+
+        if (!instrument.removeAttribute(OAVTAttribute("attrForTracker"), trackerId = trackerId1)) {
+            Log.d("OAVT",  "Attribute not removed!")
+        }
+
+        instrument.emit(OAVTAction("TEST_ACTION_THREE"), trackerId1)
 
         instrument.shutdown()
     }

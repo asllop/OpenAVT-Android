@@ -1,5 +1,7 @@
 package com.openavt.core.models
 
+import java.util.*
+
 /**
  * An OpenAVT Attribute.
  *
@@ -29,6 +31,15 @@ class OAVTAttribute(name: String) {
      */
     override fun toString(): String {
         return attributeName
+    }
+
+    /**
+     * Provide custom hash code.
+     *
+     * @return Object hash code.
+     */
+    override fun hashCode(): Int {
+        return attributeName.hashCode()
     }
 
     companion object {

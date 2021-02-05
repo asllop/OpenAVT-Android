@@ -15,19 +15,20 @@ import java.util.*
  */
 class OAVTInstrument() {
 
-    private val instrumentId : String = UUID.randomUUID().toString()
-    private var hub : OAVTHubInterface? = null
-    private var metricalc : OAVTMetricalcInterface? = null
-    private var backend : OAVTBackendInterface? = null
-    private val trackers : MutableMap<Int, OAVTTrackerInterface> = mutableMapOf()
-    private var nextTrackerId : Int = 0
-    private val timeSince : MutableMap<OAVTAttribute, Long> = mutableMapOf()
+    private val instrumentId: String = UUID.randomUUID().toString()
+    private var hub: OAVTHubInterface? = null
+    private var metricalc: OAVTMetricalcInterface? = null
+    private var backend: OAVTBackendInterface? = null
+    private val trackers: MutableMap<Int, OAVTTrackerInterface> = mutableMapOf()
+    private var nextTrackerId: Int = 0
+    private val timeSince: MutableMap<OAVTAttribute, Long> = mutableMapOf()
+    private val customAttributes: MutableMap<String, MutableMap<OAVTAttribute, Any>> = mutableMapOf()
 
     /**
      * Init a new OAVTInstrument.
      */
     init {
-        Log.d("OAVT",  "Instrument init")
+        Log.d("OAVT", "Instrument init")
     }
 
     /**
@@ -228,6 +229,73 @@ class OAVTInstrument() {
         }
     }
 
+    /**
+     * Add an attribute for current instrument.
+     *
+     * All the attributes added to the instrument are included automatically into every event passing though the chain.
+     *
+     * @param key An OAVTAttribute.
+     * @param value Value for the attribute.
+     * @param action (optional) Action.  The attribute will be only added to the events with the specified action.
+     * @param trackerId (optional) Tracker ID. The attribute will be only added to the events comming from the specified tracker..
+     */
+    fun addAttribute(key: OAVTAttribute, value: Any, action: OAVTAction? = null, trackerId: Int? = null) {
+        val k = generateCustomAttributeId(action, trackerId)
+        if (customAttributes[k] == null) {
+            customAttributes[k] = mutableMapOf()
+        }
+        customAttributes[k]!![key] = value
+    }
+
+    /**
+     * Remove attribute for current instrument.
+     *
+     * @param key An OAVTAttribute.
+     * @param value Value for the attribute.
+     * @param action (optional) Action.  The attribute will be only added to the events with the specified action.
+     * @param trackerId (optional) Tracker ID. The attribute will be only added to the events comming from the specified tracker..
+     *
+     * @return True if removed, False otherwise.
+     */
+    fun removeAttribute(key: OAVTAttribute, action: OAVTAction? = null, trackerId: Int? = null): Boolean {
+        val k = generateCustomAttributeId(action, trackerId)
+        if (customAttributes[k] != null) {
+            if (customAttributes[k]!![key] != null) {
+                customAttributes[k]!!.remove(key)
+                return true
+            }
+            else {
+                return false
+            }
+        }
+        else {
+            return false
+        }
+    }
+
+    private fun generateCustomAttributeId(action: OAVTAction? = null, trackerId: Int? = null): String {
+        if (action == null && trackerId == null) {
+            // For all
+            return "5fb1f955b45e38e31789286a1790398d"  // MD5 of string "ALL"
+        }
+        else if (action == null && trackerId != null) {
+            // For specific tracker
+            return trackerId.toString()
+        }
+        else if (trackerId == null && action != null) {
+            // For specific action
+            return action.actionName
+        }
+        else if (trackerId != null && action != null) {
+            // For specific action and tracker
+            return action.actionName + "-" + trackerId.toString()
+        }
+        else {
+            // This case is not possible, but without it Android Studio complains
+            return ""
+        }
+    }
+
     private fun generateEvent(action: OAVTAction, tracker: OAVTTrackerInterface): OAVTEvent {
         val event = OAVTEvent(action)
 
@@ -245,12 +313,32 @@ class OAVTInstrument() {
 
     private fun generateTimeSince(event: OAVTEvent) {
         for ((attr, ts) in timeSince) {
-            val delta =  System.currentTimeMillis() - ts
+            val delta = System.currentTimeMillis() - ts
             event.attributes[attr] = delta
         }
     }
 
     private fun generateCustomAttributes(tracker: OAVTTrackerInterface, event: OAVTEvent) {
-        //TODO
+        val applyAttributes = fun(d: Map<OAVTAttribute, Any>?, event: OAVTEvent) {
+            d?.let {
+                for ((k,v) in it) {
+                    event.attributes.put(k, v)
+                }
+            }
+        }
+
+        if (tracker.trackerId != null) {
+            val allKey = generateCustomAttributeId()
+            applyAttributes(customAttributes[allKey], event)
+
+            val trackerIdKey = generateCustomAttributeId(trackerId = tracker.trackerId)
+            applyAttributes(customAttributes[trackerIdKey], event)
+
+            val actionKey = generateCustomAttributeId(action = event.action)
+            applyAttributes(customAttributes[actionKey], event)
+
+            val actionTrackerIdKey = generateCustomAttributeId(action = event.action, trackerId = tracker.trackerId)
+            applyAttributes(customAttributes[actionTrackerIdKey], event)
+        }
     }
 }
