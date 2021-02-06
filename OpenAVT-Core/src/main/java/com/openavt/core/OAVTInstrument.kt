@@ -23,6 +23,7 @@ class OAVTInstrument() {
     private var nextTrackerId: Int = 0
     private val timeSince: MutableMap<OAVTAttribute, Long> = mutableMapOf()
     private val customAttributes: MutableMap<String, MutableMap<OAVTAttribute, Any>> = mutableMapOf()
+    private val trackerGetters : MutableMap<Int, MutableMap<OAVTAttribute, () -> Any?>> = mutableMapOf()
 
     /**
      * Init a new OAVTInstrument.
@@ -270,6 +271,54 @@ class OAVTInstrument() {
         }
         else {
             return false
+        }
+    }
+
+    /**
+     * Register an attribute getter for a tracker.
+     *
+     * @param attribute An OAVTAttribute.
+     * @param getter Code block. It must return the attribute value.
+     * @param tracker Tracker.
+     */
+    fun registerGetter(attribute: OAVTAttribute, getter: () -> Any?, tracker: OAVTTrackerInterface) {
+        tracker.trackerId?.let {
+            if (trackerGetters[it] == null) {
+                trackerGetters[it] = mutableMapOf()
+            }
+            trackerGetters[it]!![attribute] = getter
+        }
+    }
+
+    /**
+     * Call an attribute getter.
+     *
+     * @param attribute An OAVTAttribute.
+     * @param tracker Tracker.
+     *
+     * @return Attribute value returned by the getter code block.
+     */
+    fun callGetter(attribute: OAVTAttribute, tracker: OAVTTrackerInterface): Any? {
+        tracker.trackerId?.let {
+            trackerGetters[it]?.let {
+                it[attribute]?.let {
+                    return it()
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * Call an attribute getter and put the resulting attribute into an event.
+     *
+     * @param attribute: An OAVTAttribute.
+     * @param event An OAVTEvent.
+     * @param tracker Tracker.
+     */
+    fun useGetter(attribute: OAVTAttribute, event: OAVTEvent, tracker: OAVTTrackerInterface) {
+        callGetter(attribute, tracker)?.let {
+            event.attributes[attribute] = it
         }
     }
 
