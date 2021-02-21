@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import com.openavt.core.*
+import com.openavt.core.hubs.OAVTHubCore
 import com.openavt.core.interfaces.OAVTBackendInterface
 import com.openavt.core.interfaces.OAVTHubInterface
 import com.openavt.core.interfaces.OAVTMetricalcInterface
@@ -11,22 +12,6 @@ import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.*
 import com.openavt.core.utils.OAVTLog
 import java.util.*
-
-class AnyHub : OAVTHubInterface {
-    override fun processEvent(event: OAVTEvent, tracker: OAVTTrackerInterface): OAVTEvent? {
-        OAVTLog.verbose(  "AnyHub processEvent")
-        return event
-    }
-
-    override fun instrumentReady(instrument: OAVTInstrument) {
-        OAVTLog.verbose(  "AnyHub instrumentReady")
-    }
-
-    override fun endOfService() {
-        OAVTLog.verbose(  "AnyHub endOfService")
-    }
-
-}
 
 class AnyBackend : OAVTBackendInterface {
     override fun sendEvent(event: OAVTEvent) {
@@ -82,7 +67,6 @@ class AnyTracker : OAVTTrackerInterface {
     }
 
     override fun getState(): OAVTState {
-        OAVTLog.verbose(  "AnyTracker getState from Id = " + trackerId)
         return state
     }
 
@@ -109,11 +93,31 @@ class MainActivity : AppCompatActivity() {
 
         OAVTLog.setLogLevel(OAVTLog.LogLevel.Verbose)
 
-        val instrument = OAVTInstrument(hub = AnyHub(), metricalc = AnyMetricalc(), backend = AnyBackend())
+        OAVTLog.verbose("----------- START HERE -----------")
+
+        //val instrument = OAVTInstrument(hub = OAVTHubCore(), metricalc = AnyMetricalc(), backend = AnyBackend())
+        val instrument = OAVTInstrument(hub = OAVTHubCore(), backend = AnyBackend())
         val trackerId0 = instrument.addTracker(AnyTracker())
-        val trackerId1 = instrument.addTracker(AnyTracker())
+        //val trackerId1 = instrument.addTracker(AnyTracker())
         instrument.ready()
 
+        instrument.emit(OAVTAction.TRACKER_INIT, trackerId0)
+        instrument.emit(OAVTAction.PLAYER_SET, trackerId0)
+        instrument.emit(OAVTAction.STREAM_LOAD, trackerId0)
+        instrument.emit(OAVTAction.START, trackerId0)
+        instrument.emit(OAVTAction.PAUSE_BEGIN, trackerId0)
+        instrument.emit(OAVTAction.PAUSE_FINISH, trackerId0)
+        instrument.emit(OAVTAction.BUFFER_BEGIN, trackerId0)
+        instrument.emit(OAVTAction.BUFFER_FINISH, trackerId0)
+
+        Timer().schedule(object: TimerTask() {
+            override fun run() {
+                instrument.emit(OAVTAction.END, trackerId0)
+                instrument.shutdown()
+            }
+        }, 6000)
+
+        /*
         instrument.addAttribute(OAVTAttribute("attrAll"), 1000)
         instrument.addAttribute(OAVTAttribute("attrForAction"), 1000, OAVTAction("TEST_ACTION_ONE"))
         instrument.addAttribute(OAVTAttribute("attrForTracker"), 1000, trackerId = trackerId1)
@@ -147,5 +151,6 @@ class MainActivity : AppCompatActivity() {
                 instrument.shutdown()
             }
         }, 12000)
+         */
     }
 }
