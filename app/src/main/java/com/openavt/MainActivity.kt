@@ -9,6 +9,7 @@ import com.openavt.core.interfaces.OAVTHubInterface
 import com.openavt.core.interfaces.OAVTMetricalcInterface
 import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.*
+import java.util.*
 
 class AnyHub : OAVTHubInterface {
     override fun processEvent(event: OAVTEvent, tracker: OAVTTrackerInterface): OAVTEvent? {
@@ -134,6 +135,14 @@ class MainActivity : AppCompatActivity() {
         ret = instrument.callGetter(OAVTAttribute.DURATION, instrument.getTracker(trackerId1)!!) as Int
         Log.d("OAVT",  "Call getter DURATION on tracker1 = " + ret)
 
-        instrument.shutdown()
+        instrument.startPing(trackerId1, 5)
+
+        Timer().schedule(object: TimerTask() {
+            override fun run() {
+                instrument.stopPing(trackerId1)
+
+                instrument.shutdown()
+            }
+        }, 12000)
     }
 }

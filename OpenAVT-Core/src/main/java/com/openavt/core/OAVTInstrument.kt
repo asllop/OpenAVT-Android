@@ -23,6 +23,7 @@ class OAVTInstrument() {
     private var nextTrackerId: Int = 0
     private val timeSince: MutableMap<OAVTAttribute, Long> = mutableMapOf()
     private val customAttributes: MutableMap<String, MutableMap<OAVTAttribute, Any>> = mutableMapOf()
+    private var pingTrackerTimers: MutableMap<Int, Timer> = mutableMapOf()
     private val trackerGetters : MutableMap<Int, MutableMap<OAVTAttribute, () -> Any?>> = mutableMapOf()
 
     /**
@@ -189,7 +190,38 @@ class OAVTInstrument() {
         this.backend?.let { it.endOfService() }
     }
 
-    //TODO: Ping stuff
+    /**
+     * Start PING timer.
+     *
+     * Once called it will start sending PING events every `interval` using the tracker specified in `trackerId`.
+     *
+     * @param trackerId Tracker ID.
+     * @param interval The timer interval of the timer in seconds.
+     */
+    fun startPing(trackerId: Int, interval: Long) {
+        stopPing(trackerId)
+        val timer = Timer()
+        pingTrackerTimers[trackerId] = timer
+        timer.scheduleAtFixedRate(object: TimerTask() {
+            override fun run() {
+                Log.d("OAVT",  "Send PING from trackerdId = " + trackerId)
+                this@OAVTInstrument.emit(OAVTAction.PING, trackerId)
+            }
+        }, interval * 1000, interval * 1000)
+    }
+
+    /**
+     * Stop PING timer.
+     *
+     * @param trackerId Tracker ID.
+     */
+    fun stopPing(trackerId: Int) {
+        pingTrackerTimers[trackerId]?.let {
+            Log.d("OAVT",  "Cancel PING from trackerdId = " + trackerId)
+            it.cancel()
+            pingTrackerTimers.remove(trackerId)
+        }
+    }
 
     /**
      * Emit an event.
