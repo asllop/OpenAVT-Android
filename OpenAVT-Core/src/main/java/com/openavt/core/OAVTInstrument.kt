@@ -8,6 +8,7 @@ import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.OAVTAction
 import com.openavt.core.models.OAVTAttribute
 import com.openavt.core.models.OAVTEvent
+import com.openavt.core.utils.OAVTLog
 import java.util.*
 
 /**
@@ -30,7 +31,7 @@ class OAVTInstrument() {
      * Init a new OAVTInstrument.
      */
     init {
-        Log.d("OAVT", "Instrument init")
+        OAVTLog.verbose("Instrument init")
     }
 
     /**
@@ -42,7 +43,7 @@ class OAVTInstrument() {
     constructor(hub: OAVTHubInterface, backend: OAVTBackendInterface): this() {
         setHub(hub)
         setBackend(backend)
-        Log.d("OAVT", "Instrument init with hub and backend")
+        OAVTLog.verbose("Instrument init with hub and backend")
     }
 
     /**
@@ -54,7 +55,7 @@ class OAVTInstrument() {
      */
     constructor(hub: OAVTHubInterface, metricalc: OAVTMetricalcInterface, backend: OAVTBackendInterface): this(hub, backend) {
         setMetricalc(metricalc)
-        Log.d("OAVT", "Instrument init with hub, metricalc and backend")
+        OAVTLog.verbose("Instrument init with hub, metricalc and backend")
     }
 
     /**
@@ -204,7 +205,7 @@ class OAVTInstrument() {
         pingTrackerTimers[trackerId] = timer
         timer.scheduleAtFixedRate(object: TimerTask() {
             override fun run() {
-                Log.d("OAVT",  "Send PING from trackerdId = " + trackerId)
+                OAVTLog.verbose("Send PING from trackerdId = " + trackerId)
                 this@OAVTInstrument.emit(OAVTAction.PING, trackerId)
             }
         }, interval * 1000, interval * 1000)
@@ -217,7 +218,7 @@ class OAVTInstrument() {
      */
     fun stopPing(trackerId: Int) {
         pingTrackerTimers[trackerId]?.let {
-            Log.d("OAVT",  "Cancel PING from trackerdId = " + trackerId)
+            OAVTLog.verbose("Cancel PING from trackerdId = " + trackerId)
             it.cancel()
             pingTrackerTimers.remove(trackerId)
         }

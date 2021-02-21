@@ -9,45 +9,46 @@ import com.openavt.core.interfaces.OAVTHubInterface
 import com.openavt.core.interfaces.OAVTMetricalcInterface
 import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.*
+import com.openavt.core.utils.OAVTLog
 import java.util.*
 
 class AnyHub : OAVTHubInterface {
     override fun processEvent(event: OAVTEvent, tracker: OAVTTrackerInterface): OAVTEvent? {
-        Log.d("OAVT",  "AnyHub processEvent")
+        OAVTLog.verbose(  "AnyHub processEvent")
         return event
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
-        Log.d("OAVT",  "AnyHub instrumentReady")
+        OAVTLog.verbose(  "AnyHub instrumentReady")
     }
 
     override fun endOfService() {
-        Log.d("OAVT",  "AnyHub endOfService")
+        OAVTLog.verbose(  "AnyHub endOfService")
     }
 
 }
 
 class AnyBackend : OAVTBackendInterface {
     override fun sendEvent(event: OAVTEvent) {
-        Log.d("OAVT",  "AnyBackend sendEvent = " + event)
+        OAVTLog.verbose(  "AnyBackend sendEvent = " + event)
     }
 
     override fun sendMetric(metric: OAVTMetric) {
-        Log.d("OAVT",  "AnyBackend sendMetric = " + metric)
+        OAVTLog.verbose(  "AnyBackend sendMetric = " + metric)
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
-        Log.d("OAVT",  "AnyBackend instrumentReady")
+        OAVTLog.verbose(  "AnyBackend instrumentReady")
     }
 
     override fun endOfService() {
-        Log.d("OAVT",  "AnyBackend endOfService")
+        OAVTLog.verbose(  "AnyBackend endOfService")
     }
 }
 
 class AnyMetricalc : OAVTMetricalcInterface {
     override fun processMetric(event: OAVTEvent, tracker: OAVTTrackerInterface): Array<OAVTMetric> {
-        Log.d("OAVT",  "AnyMetricalc processMetric")
+        OAVTLog.verbose(  "AnyMetricalc processMetric")
         return arrayOf(
                 OAVTMetric("metricX", OAVTMetric.MetricType.Counter, 10),
                 OAVTMetric("metricY", OAVTMetric.MetricType.Gauge, 9.9999),
@@ -56,11 +57,11 @@ class AnyMetricalc : OAVTMetricalcInterface {
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
-        Log.d("OAVT",  "AnyMetricalc instrumentReady")
+        OAVTLog.verbose(  "AnyMetricalc instrumentReady")
     }
 
     override fun endOfService() {
-        Log.d("OAVT",  "AnyMetricalc endOfService")
+        OAVTLog.verbose(  "AnyMetricalc endOfService")
     }
 
 }
@@ -72,7 +73,7 @@ class AnyTracker : OAVTTrackerInterface {
     override var trackerId: Int? = null
 
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
-        Log.d("OAVT",  "AnyTracker initEvent from Id = " + trackerId)
+        OAVTLog.verbose(  "AnyTracker initEvent from Id = " + trackerId)
         event.attributes[OAVTAttribute.TITLE] = "Space balls"
         event.attributes[OAVTAttribute.VOLUME] = 100
         instrument?.let { it.useGetter(OAVTAttribute.DURATION, event, this) }
@@ -81,22 +82,22 @@ class AnyTracker : OAVTTrackerInterface {
     }
 
     override fun getState(): OAVTState {
-        Log.d("OAVT",  "AnyTracker getState from Id = " + trackerId)
+        OAVTLog.verbose(  "AnyTracker getState from Id = " + trackerId)
         return state
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
-        Log.d("OAVT",  "AnyTracker instrumentReady from Id = " + trackerId)
+        OAVTLog.verbose(  "AnyTracker instrumentReady from Id = " + trackerId)
         this.instrument = instrument
         instrument.registerGetter(OAVTAttribute.DURATION, ::getAttrDuration, this)
     }
 
     override fun endOfService() {
-        Log.d("OAVT",  "AnyTracker endOfService from Id = " + trackerId)
+        OAVTLog.verbose(  "AnyTracker endOfService from Id = " + trackerId)
     }
 
     fun getAttrDuration(): Int {
-        Log.d("OAVT",  "AnyTracker getAttrDuration, this = " + this)
+        OAVTLog.verbose(  "AnyTracker getAttrDuration, this = " + this)
         return 1234
     }
 }
@@ -105,6 +106,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        OAVTLog.setLogLevel(OAVTLog.LogLevel.Verbose)
 
         val instrument = OAVTInstrument(hub = AnyHub(), metricalc = AnyMetricalc(), backend = AnyBackend())
         val trackerId0 = instrument.addTracker(AnyTracker())
@@ -119,21 +122,21 @@ class MainActivity : AppCompatActivity() {
         instrument.emit(OAVTAction("TEST_ACTION_ONE"), trackerId0)
         instrument.emit(OAVTAction("TEST_ACTION_TWO", OAVTAttribute("timeSinceTestTwo")), trackerId0)
         instrument.emit(OAVTAction("TEST_ACTION_THREE"), trackerId0)
-        Log.d("OAVT",  "------------------------------------------------------------------------------")
+        OAVTLog.verbose(  "------------------------------------------------------------------------------")
         instrument.emit(OAVTAction("TEST_ACTION_ONE"), trackerId1)
         instrument.emit(OAVTAction("TEST_ACTION_TWO"), trackerId1)
 
         if (!instrument.removeAttribute(OAVTAttribute("attrForTracker"), trackerId = trackerId1)) {
-            Log.d("OAVT",  "Attribute not removed!")
+            OAVTLog.verbose(  "Attribute not removed!")
         }
 
         instrument.emit(OAVTAction("TEST_ACTION_THREE"), trackerId1)
 
         var ret: Int = 0
         ret = instrument.callGetter(OAVTAttribute.DURATION, instrument.getTracker(trackerId0)!!) as Int
-        Log.d("OAVT",  "Call getter DURATION on tracker0 = " + ret)
+        OAVTLog.verbose(  "Call getter DURATION on tracker0 = " + ret)
         ret = instrument.callGetter(OAVTAttribute.DURATION, instrument.getTracker(trackerId1)!!) as Int
-        Log.d("OAVT",  "Call getter DURATION on tracker1 = " + ret)
+        OAVTLog.verbose(  "Call getter DURATION on tracker1 = " + ret)
 
         instrument.startPing(trackerId1, 5)
 
