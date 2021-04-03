@@ -1,17 +1,17 @@
 package com.openavt
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import com.openavt.core.*
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.ui.PlayerView
+import com.openavt.core.OAVTInstrument
 import com.openavt.core.hubs.OAVTHubCore
 import com.openavt.core.interfaces.OAVTBackendInterface
-import com.openavt.core.interfaces.OAVTHubInterface
-import com.openavt.core.interfaces.OAVTMetricalcInterface
-import com.openavt.core.interfaces.OAVTTrackerInterface
-import com.openavt.core.models.*
+import com.openavt.core.models.OAVTEvent
+import com.openavt.core.models.OAVTMetric
 import com.openavt.core.utils.OAVTLog
-import java.util.*
+import com.openavt.exoplayer.trackers.OAVTTrackerExoPlayer
 
 class AnyBackend : OAVTBackendInterface {
     override fun sendEvent(event: OAVTEvent) {
@@ -30,7 +30,7 @@ class AnyBackend : OAVTBackendInterface {
         OAVTLog.verbose(  "AnyBackend endOfService")
     }
 }
-
+/*
 class AnyMetricalc : OAVTMetricalcInterface {
     override fun processMetric(event: OAVTEvent, tracker: OAVTTrackerInterface): Array<OAVTMetric> {
         OAVTLog.verbose(  "AnyMetricalc processMetric")
@@ -52,9 +52,9 @@ class AnyMetricalc : OAVTMetricalcInterface {
 }
 
 class AnyTracker : OAVTTrackerInterface {
-    private val state = OAVTState()
     private var instrument: OAVTInstrument? = null
 
+    override var state = OAVTState()
     override var trackerId: Int? = null
 
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
@@ -64,10 +64,6 @@ class AnyTracker : OAVTTrackerInterface {
         instrument?.let { it.useGetter(OAVTAttribute.DURATION, event, this) }
 
         return event
-    }
-
-    override fun getState(): OAVTState {
-        return state
     }
 
     override fun instrumentReady(instrument: OAVTInstrument) {
@@ -85,8 +81,13 @@ class AnyTracker : OAVTTrackerInterface {
         return 1234
     }
 }
+ */
+
+lateinit var instrument : OAVTInstrument
+var trackerId : Int = 0
 
 class MainActivity : AppCompatActivity() {
+    private var player: SimpleExoPlayer? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -95,62 +96,20 @@ class MainActivity : AppCompatActivity() {
 
         OAVTLog.verbose("----------- START HERE -----------")
 
-        //val instrument = OAVTInstrument(hub = OAVTHubCore(), metricalc = AnyMetricalc(), backend = AnyBackend())
-        val instrument = OAVTInstrument(hub = OAVTHubCore(), backend = AnyBackend())
-        val trackerId0 = instrument.addTracker(AnyTracker())
-        //val trackerId1 = instrument.addTracker(AnyTracker())
+        instrument = OAVTInstrument(hub = OAVTHubCore(), backend = AnyBackend())
+        trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
         instrument.ready()
 
-        instrument.emit(OAVTAction.TRACKER_INIT, trackerId0)
-        instrument.emit(OAVTAction.PLAYER_SET, trackerId0)
-        instrument.emit(OAVTAction.STREAM_LOAD, trackerId0)
-        instrument.emit(OAVTAction.START, trackerId0)
-        instrument.emit(OAVTAction.PAUSE_BEGIN, trackerId0)
-        instrument.emit(OAVTAction.PAUSE_FINISH, trackerId0)
-        instrument.emit(OAVTAction.BUFFER_BEGIN, trackerId0)
-        instrument.emit(OAVTAction.BUFFER_FINISH, trackerId0)
+        playVideo("https://demos.transloadit.com/dashtest/my_playlist.mpd")
+    }
 
-        Timer().schedule(object: TimerTask() {
-            override fun run() {
-                instrument.emit(OAVTAction.END, trackerId0)
-                instrument.shutdown()
-            }
-        }, 6000)
-
-        /*
-        instrument.addAttribute(OAVTAttribute("attrAll"), 1000)
-        instrument.addAttribute(OAVTAttribute("attrForAction"), 1000, OAVTAction("TEST_ACTION_ONE"))
-        instrument.addAttribute(OAVTAttribute("attrForTracker"), 1000, trackerId = trackerId1)
-
-        instrument.emit(OAVTAction.PING, trackerId0)
-        instrument.emit(OAVTAction("TEST_ACTION_ONE"), trackerId0)
-        instrument.emit(OAVTAction("TEST_ACTION_TWO", OAVTAttribute("timeSinceTestTwo")), trackerId0)
-        instrument.emit(OAVTAction("TEST_ACTION_THREE"), trackerId0)
-        OAVTLog.verbose(  "------------------------------------------------------------------------------")
-        instrument.emit(OAVTAction("TEST_ACTION_ONE"), trackerId1)
-        instrument.emit(OAVTAction("TEST_ACTION_TWO"), trackerId1)
-
-        if (!instrument.removeAttribute(OAVTAttribute("attrForTracker"), trackerId = trackerId1)) {
-            OAVTLog.verbose(  "Attribute not removed!")
-        }
-
-        instrument.emit(OAVTAction("TEST_ACTION_THREE"), trackerId1)
-
-        var ret: Int = 0
-        ret = instrument.callGetter(OAVTAttribute.DURATION, instrument.getTracker(trackerId0)!!) as Int
-        OAVTLog.verbose(  "Call getter DURATION on tracker0 = " + ret)
-        ret = instrument.callGetter(OAVTAttribute.DURATION, instrument.getTracker(trackerId1)!!) as Int
-        OAVTLog.verbose(  "Call getter DURATION on tracker1 = " + ret)
-
-        instrument.startPing(trackerId1, 5)
-
-        Timer().schedule(object: TimerTask() {
-            override fun run() {
-                instrument.stopPing(trackerId1)
-
-                instrument.shutdown()
-            }
-        }, 12000)
-         */
+    private fun playVideo(videoUrl: String) {
+        player = SimpleExoPlayer.Builder(this).build()
+        val playerView = findViewById<PlayerView>(R.id.player)
+        playerView.player = player
+        player!!.setMediaItem(MediaItem.fromUri(videoUrl))
+        // Prepare the player.
+        player!!.setPlayWhenReady(true)
+        player!!.prepare()
     }
 }

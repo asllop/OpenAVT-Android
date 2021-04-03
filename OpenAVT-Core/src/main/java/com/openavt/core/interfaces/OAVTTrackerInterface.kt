@@ -12,13 +12,11 @@ interface OAVTTrackerInterface : OAVTComponentInterface {
      */
     fun initEvent(event: OAVTEvent): OAVTEvent?
     /**
-     * Returns the current state.
-     *
-     * @return The state.
-     */
-    fun getState(): OAVTState
-    /**
      * Tracked ID.
      */
     var trackerId : Int?
+    /**
+     * Tracker state.
+     */
+    var state : OAVTState
 }
