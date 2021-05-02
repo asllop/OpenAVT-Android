@@ -47,11 +47,11 @@ open class OAVTMetric(name: String, type: MetricType, value: Number): OAVTSample
         /** Number of streams played metric name. */
         fun NUM_PLAYS(value: Int) = OAVTMetric("numPlays", MetricType.Counter, value)
         /** Rebuffer time metric name. */
-        fun REBUFFER_TIME(value: Int) = OAVTMetric("rebufferTime", MetricType.Counter, value)
+        fun REBUFFER_TIME(value: Int) = OAVTMetric("rebufferTime", MetricType.Gauge, value)
         /** Number of rebufers metric name. */
         fun NUM_REBUFFERS(value: Int) = OAVTMetric("numRebuffers", MetricType.Counter, value)
         /** Playtime since last event. */
-        fun PLAY_TIME(value: Int) = OAVTMetric("playTime", MetricType.Counter, value)
+        fun PLAY_TIME(value: Int) = OAVTMetric("playTime", MetricType.Gauge, value)
         /** Number of streams requested metric name. */
         fun NUM_REQUESTS(value: Int) = OAVTMetric("numRequests", MetricType.Counter, value)
         /** Number of streams loaded metric name. */
