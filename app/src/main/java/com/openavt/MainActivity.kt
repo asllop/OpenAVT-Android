@@ -88,6 +88,7 @@ var trackerId : Int = 0
 
 class MainActivity : AppCompatActivity() {
     private var player: SimpleExoPlayer? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -105,9 +106,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun playVideo(videoUrl: String) {
         player = SimpleExoPlayer.Builder(this).build()
+
+        // Set player into tracker
+        (instrument.getTracker(trackerId) as OAVTTrackerExoPlayer).setPlayer(player!!)
+
         val playerView = findViewById<PlayerView>(R.id.player)
         playerView.player = player
         player!!.setMediaItem(MediaItem.fromUri(videoUrl))
+
         // Prepare the player.
         player!!.setPlayWhenReady(true)
         player!!.prepare()
