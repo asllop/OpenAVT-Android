@@ -17,6 +17,8 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     private var instrument: OAVTInstrument? = null
     private var player: SimpleExoPlayer? = null
 
+    private var userRequested = false
+
     /**
      * Init a new OAVTTrackerExoPlayer.
      */
@@ -88,19 +90,45 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
 
         when (state) {
             Player.STATE_BUFFERING -> {
+                OAVTLog.verbose("STATE: STATE_BUFFERING")
                 instrument?.emit(OAVTAction.STREAM_LOAD, this)
                 instrument?.emit(OAVTAction.BUFFER_BEGIN, this)
+
             }
-            Player.STATE_READY -> instrument?.emit(OAVTAction.BUFFER_FINISH, this)
-            Player.STATE_ENDED -> instrument?.emit(OAVTAction.END, this)
+            Player.STATE_READY -> {
+                OAVTLog.verbose("STATE: STATE_READY")
+                instrument?.emit(OAVTAction.BUFFER_FINISH, this)
+                if (userRequested) {
+                    instrument?.emit(OAVTAction.START, this)
+                }
+            }
+            Player.STATE_ENDED -> {
+                OAVTLog.verbose("STATE: STATE_ENDED")
+                instrument?.emit(OAVTAction.END, this)
+                userRequested = false
+            }
         }
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         OAVTLog.verbose("onPlayWhenReadyChanged playWhenReady = $playWhenReady , reason = $reason")
 
+        when (reason) {
+            Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST -> {
+                OAVTLog.verbose("REASON: USER_REQUEST")
+                userRequested = true
+            }
+            Player.PLAY_WHEN_READY_CHANGE_REASON_REMOTE -> OAVTLog.verbose("REASON: REMOTE")
+            Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM -> OAVTLog.verbose("REASON: END_OF_MEDIA_ITEM")
+            Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY -> OAVTLog.verbose("REASON: AUDIO_BECOMING_NOISY")
+            Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS -> OAVTLog.verbose("REASON: AUDIO_FOCUS_LOSS")
+            else -> OAVTLog.verbose("REASON: OTHER")
+        }
+
         if (playWhenReady) {
-            instrument?.emit(OAVTAction.START, this)
+            if (this.state.didStreamLoad) {
+                instrument?.emit(OAVTAction.START, this)
+            }
             instrument?.emit(OAVTAction.PAUSE_FINISH, this)
         }
         else {
