@@ -33,7 +33,7 @@ class OAVTLog {
     }
 
     companion object {
-        private var logLevel = LogLevel.None
+        private var logLevel = LogLevel.Warning
 
         private fun log(msg: String, cutLevel: LogLevel) {
             if (this.logLevel <= cutLevel) {
@@ -47,7 +47,7 @@ class OAVTLog {
          * @param msg Message.
          */
         fun verbose(msg: String) {
-            this.log(msg, LogLevel.Verbose)
+            this.log("[VERBOSE] " + msg, LogLevel.Verbose)
         }
 
         /**
