@@ -100,6 +100,9 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
         unregisterListeners()
     }
 
+    /**
+     * Register attributes getters.
+     */
     fun registerGetters() {
         this.instrument?.registerGetter(OAVTAttribute.TRACKER_TARGET, ::getTrackerTarget, this)
         this.instrument?.registerGetter(OAVTAttribute.POSITION, ::getPosition, this)
@@ -116,63 +119,127 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
         this.instrument?.registerGetter(OAVTAttribute.IS_ADS_TRACKER, ::getIsAdsTracker, this)
     }
 
-    // Attributes
+    // Attribute getters
 
+    /**
+     * Get tracker target attribute.
+     *
+     * @return attribute.
+     */
     fun getTrackerTarget() : String {
         return "ExoPlayer"
     }
 
+    /**
+     * Get position attribute.
+     *
+     * @return attribute.
+     */
     fun getPosition() : Long? {
         return player?.contentPosition
     }
 
+    /**
+     * Get duration attribute.
+     *
+     * @return attribute.
+     */
     fun getDuration() : Long? {
         return player?.duration
     }
 
+    /**
+     * Get resolution height attribute.
+     *
+     * @return attribute.
+     */
     fun getResolutionHeight() : Int? {
         return player?.videoFormat?.height
     }
 
+    /**
+     * Get resolution width attribute.
+     *
+     * @return attribute.
+     */
     fun getResolutionWidth() : Int? {
         return player?.videoFormat?.width
     }
 
+    /**
+     * Get volume attribute.
+     *
+     * @return attribute.
+     */
     fun getVolume() : Float? {
         return player?.volume
     }
 
+    /**
+     * Get is muted attribute.
+     *
+     * @return attribute.
+     */
     fun getIsMuted() : Boolean? {
         return if (getVolume() != null) getVolume() == 0f else null
     }
 
+    /**
+     * Get fps attribute.
+     *
+     * @return attribute.
+     */
     fun getFps() : Float? {
         return player?.videoFormat?.frameRate
     }
 
+    /**
+     * Get source attribute.
+     *
+     * @return attribute.
+     */
     fun getSource() : String? {
         return null
     }
 
-    //TODO: estimated bitrate
+    /**
+     * Get bitrate attribute.
+     *
+     * @return attribute.
+     */
     fun getBitrate() : Int? {
+        //TODO: estimated bitrate
         return null
     }
 
+    /**
+     * Get language attribute.
+     *
+     * @return attribute.
+     */
     fun getLanguage() : String? {
         return null
     }
 
+    /**
+     * Get subtitles attribute.
+     *
+     * @return attribute.
+     */
     fun getSubtitles() : String? {
         return null
     }
 
+    /**
+     * Get is ads tracker attribute.
+     *
+     * @return attribute.
+     */
     fun getIsAdsTracker() : Boolean {
         return false
     }
 
     //TODO: errors
-    //TODO: seeking
     //TODO: check resolution change
 
     // ExoPlayer event listener methods
@@ -192,6 +259,9 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
                 instrument?.emit(OAVTAction.BUFFER_FINISH, this)
                 if (userRequested) {
                     instrument?.emit(OAVTAction.START, this)
+                }
+                if (this.state.isSeeking) {
+                    instrument?.emit(OAVTAction.SEEK_FINISH, this)
                 }
             }
             Player.STATE_ENDED -> {
@@ -226,5 +296,10 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
         else {
             instrument?.emit(OAVTAction.PAUSE_BEGIN, this)
         }
+    }
+
+    override fun onSeekStarted(eventTime: AnalyticsListener.EventTime) {
+        super.onSeekStarted(eventTime)
+        instrument?.emit(OAVTAction.SEEK_BEGIN, this)
     }
 }
