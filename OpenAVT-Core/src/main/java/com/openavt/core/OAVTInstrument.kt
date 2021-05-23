@@ -1,6 +1,7 @@
 package com.openavt.core
 
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import com.openavt.core.interfaces.OAVTBackendInterface
 import com.openavt.core.interfaces.OAVTHubInterface
 import com.openavt.core.interfaces.OAVTMetricalcInterface
@@ -10,6 +11,7 @@ import com.openavt.core.models.OAVTAttribute
 import com.openavt.core.models.OAVTEvent
 import com.openavt.core.utils.OAVTLog
 import java.util.*
+
 
 /**
  * An OpenAVT Instrument.
@@ -205,8 +207,11 @@ class OAVTInstrument() {
         pingTrackerTimers[trackerId] = timer
         timer.scheduleAtFixedRate(object: TimerTask() {
             override fun run() {
-                OAVTLog.verbose("Send PING from trackerdId = " + trackerId)
-                this@OAVTInstrument.emit(OAVTAction.PING, trackerId)
+                val handler = Handler(Looper.getMainLooper())
+                handler.post(Runnable {
+                    OAVTLog.verbose("Send PING from trackerdId = " + trackerId)
+                    this@OAVTInstrument.emit(OAVTAction.PING, trackerId)
+                })
             }
         }, interval * 1000, interval * 1000)
     }
