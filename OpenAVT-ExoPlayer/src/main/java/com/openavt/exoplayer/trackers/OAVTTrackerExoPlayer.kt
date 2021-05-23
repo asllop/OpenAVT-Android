@@ -17,8 +17,8 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
 
     private var instrument: OAVTInstrument? = null
     private var player: SimpleExoPlayer? = null
-
     private var userRequested = false
+    private var bitrateEstimate: Long? = null
 
     /**
      * Init a new OAVTTrackerExoPlayer.
@@ -207,9 +207,8 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getBitrate() : Int? {
-        //TODO: estimated bitrate
-        return null
+    fun getBitrate() : Long? {
+        return bitrateEstimate
     }
 
     /**
@@ -301,5 +300,15 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     override fun onSeekStarted(eventTime: AnalyticsListener.EventTime) {
         super.onSeekStarted(eventTime)
         instrument?.emit(OAVTAction.SEEK_BEGIN, this)
+    }
+
+    override fun onBandwidthEstimate(
+        eventTime: AnalyticsListener.EventTime,
+        totalLoadTimeMs: Int,
+        totalBytesLoaded: Long,
+        bitrateEstimate: Long
+    ) {
+        super.onBandwidthEstimate(eventTime, totalLoadTimeMs, totalBytesLoaded, bitrateEstimate)
+        this.bitrateEstimate = bitrateEstimate;
     }
 }
