@@ -75,7 +75,7 @@ class OAVTAttribute(name: String) {
         val IN_PLAYBACK_BLOCK = OAVTAttribute("inPlaybackBlock")
         /** Error Description attribute. Error message. */
         val ERROR_DESCRIPTION = OAVTAttribute("errorDescription")
-        /** Error Type attribute. Error message. */
+        /** Error Type attribute. Error type. */
         val ERROR_TYPE = OAVTAttribute("errorType")
         /** Position attribute. Current stream position. */
         val POSITION = OAVTAttribute("position")

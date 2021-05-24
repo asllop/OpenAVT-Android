@@ -73,7 +73,6 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
         if (event.action == OAVTAction.ERROR) {
             lastError?.let {
-                event.attributes[OAVTAttribute.ERROR_DESCRIPTION] = it.message ?: ""
                 val type : String?
                 when (it.type) {
                     ExoPlaybackException.TYPE_REMOTE -> type = "remote"
@@ -82,9 +81,9 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
                     ExoPlaybackException.TYPE_UNEXPECTED -> type = "unexpected"
                     else -> type = null
                 }
-                if (type != null) {
-                    event.attributes[OAVTAttribute.ERROR_TYPE] = type
-                }
+
+                event.attributes[OAVTAttribute.ERROR_DESCRIPTION] = it.message ?: ""
+                event.attributes[OAVTAttribute.ERROR_TYPE] = type ?: ""
                 lastError = null
             }
         }
