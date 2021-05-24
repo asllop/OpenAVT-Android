@@ -1,5 +1,6 @@
 package com.openavt.exoplayer.trackers
 
+import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.analytics.AnalyticsListener
@@ -19,6 +20,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     private var player: SimpleExoPlayer? = null
     private var userRequested = false
     private var bitrateEstimate: Long? = null
+    private var lastError: ExoPlaybackException? = null
 
     /**
      * Init a new OAVTTrackerExoPlayer.
@@ -69,6 +71,23 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     }
 
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
+        if (event.action == OAVTAction.ERROR) {
+            lastError?.let {
+                event.attributes[OAVTAttribute.ERROR_DESCRIPTION] = it.message ?: ""
+                val type : String?
+                when (it.type) {
+                    ExoPlaybackException.TYPE_REMOTE -> type = "remote"
+                    ExoPlaybackException.TYPE_RENDERER -> type = "renderer"
+                    ExoPlaybackException.TYPE_SOURCE -> type = "source"
+                    ExoPlaybackException.TYPE_UNEXPECTED -> type = "unexpected"
+                    else -> type = null
+                }
+                if (type != null) {
+                    event.attributes[OAVTAttribute.ERROR_TYPE] = type
+                }
+                lastError = null
+            }
+        }
 
         // Set attributes from getters
         instrument?.useGetter(OAVTAttribute.TRACKER_TARGET, event, this)
@@ -238,7 +257,6 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
         return false
     }
 
-    //TODO: errors
     //TODO: check resolution change
 
     // ExoPlayer event listener methods
@@ -310,5 +328,14 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     ) {
         super.onBandwidthEstimate(eventTime, totalLoadTimeMs, totalBytesLoaded, bitrateEstimate)
         this.bitrateEstimate = bitrateEstimate;
+    }
+
+    override fun onPlayerError(
+        eventTime: AnalyticsListener.EventTime,
+        error: ExoPlaybackException
+    ) {
+        super<AnalyticsListener>.onPlayerError(eventTime, error)
+        this.lastError = error;
+        instrument?.emit(OAVTAction.ERROR, this)
     }
 }
