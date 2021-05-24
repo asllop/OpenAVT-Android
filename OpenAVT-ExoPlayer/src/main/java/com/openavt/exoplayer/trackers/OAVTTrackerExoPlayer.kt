@@ -21,6 +21,8 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     private var userRequested = false
     private var bitrateEstimate: Long? = null
     private var lastError: ExoPlaybackException? = null
+    private var lastResolutionHeight: Int = 0
+    private var lastResolutionWidth: Int = 0
 
     /**
      * Init a new OAVTTrackerExoPlayer.
@@ -336,5 +338,48 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
         super<AnalyticsListener>.onPlayerError(eventTime, error)
         this.lastError = error;
         instrument?.emit(OAVTAction.ERROR, this)
+    }
+
+    override fun onVideoSizeChanged(
+        eventTime: AnalyticsListener.EventTime,
+        width: Int,
+        height: Int,
+        unappliedRotationDegrees: Int,
+        pixelWidthHeightRatio: Float
+    ) {
+        super.onVideoSizeChanged(
+            eventTime,
+            width,
+            height,
+            unappliedRotationDegrees,
+            pixelWidthHeightRatio
+        )
+        OAVTLog.verbose("-----> onVideoSizeChanged")
+        checkResolutionChange()
+    }
+
+    fun checkResolutionChange() {
+        val currH = getResolutionHeight()
+        val currW = getResolutionWidth()
+        if (currH != null && currW != null) {
+            if (lastResolutionWidth == 0 || lastResolutionHeight == 0) {
+                lastResolutionHeight = currH
+                lastResolutionWidth = currW
+            }
+            else {
+                val lastMul = lastResolutionHeight * lastResolutionWidth
+                        val currMul = currH * currW
+
+                        if (lastMul > currMul) {
+                            instrument?.emit(OAVTAction.QUALITY_CHANGE_DOWN, this)
+                        }
+                        else if (lastMul < currMul) {
+                            instrument?.emit(OAVTAction.QUALITY_CHANGE_UP, this)
+                        }
+
+                lastResolutionHeight = currH
+                lastResolutionWidth = currW
+            }
+        }
     }
 }

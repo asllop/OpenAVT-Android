@@ -101,7 +101,8 @@ class MainActivity : AppCompatActivity() {
         trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
         instrument.ready()
 
-        playVideo("https://demos.transloadit.com/dashtest/my_playlist.mpd")
+        //playVideo("https://demos.transloadit.com/dashtest/my_playlist.mpd")
+        playVideo("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
     }
 
     private fun playVideo(videoUrl: String) {
