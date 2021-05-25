@@ -7,7 +7,7 @@ package com.openavt.core.models
  * @param type Metric type
  * @param value Metric value
  */
-open class OAVTMetric(name: String, type: MetricType, value: Number): OAVTSample() {
+class OAVTMetric(name: String, type: MetricType, value: Number): OAVTSample() {
 
     /**
      * Get metric name.

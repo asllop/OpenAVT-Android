@@ -5,7 +5,7 @@ package com.openavt.core.models
  *
  * @param action Action.
  */
-open class OAVTEvent(action: OAVTAction): OAVTSample() {
+class OAVTEvent(action: OAVTAction): OAVTSample() {
 
     /**
      * Get event action.

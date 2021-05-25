@@ -11,7 +11,7 @@ import java.util.*
 /**
  * OAVT hub for generic content players.
  */
-class OAVTHubCore : OAVTHubInterface {
+open class OAVTHubCore : OAVTHubInterface {
     private var countErrors = 0
     private var countStarts = 0
     private var accumPauseTime = 0L
@@ -39,112 +39,11 @@ class OAVTHubCore : OAVTHubInterface {
             event.attributes[OAVTAttribute.DELTA_PLAY_TIME] = System.currentTimeMillis() - timestampOfLastEventOnPlayback
         }
 
-        if (event.action == OAVTAction.MEDIA_REQUEST) {
-            if (!tracker.state.didMediaRequest) {
-                tracker.state.didMediaRequest = true
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.PLAYER_SET) {
-            if (!tracker.state.didPlayerSet) {
-                tracker.state.didPlayerSet = true
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.STREAM_LOAD) {
-            if (!tracker.state.didStreamLoad) {
-                tracker.state.didStreamLoad = true
-                streamId = UUID.randomUUID().toString()
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.START) {
-            if (!tracker.state.didStart) {
-                this.instrument?.startPing(tracker.trackerId!!, 30)
-                tracker.state.didStart = true
-                countStarts = countStarts + 1
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.PAUSE_BEGIN) {
-            if (tracker.state.didStart && !tracker.state.isPaused) {
-                tracker.state.isPaused = true
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.PAUSE_FINISH) {
-            if (tracker.state.didStart && tracker.state.isPaused) {
-                tracker.state.isPaused = false
-                val timeSincePauseBegin = event.attributes[OAVTAction.PAUSE_BEGIN.timeAttribute]
-                accumPauseTime = accumPauseTime + (timeSincePauseBegin as Long)
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.BUFFER_BEGIN) {
-            if (!tracker.state.isBuffering) {
-                tracker.state.isBuffering = true
-                lastBufferBeginInPauseBlock = tracker.state.isPaused
-                lastBufferBeginInSeekBlock = tracker.state.isSeeking
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.BUFFER_FINISH) {
-            if (tracker.state.isBuffering) {
-                tracker.state.isBuffering = false
-                val timeSinceBufferBegin = event.attributes[OAVTAction.BUFFER_BEGIN.timeAttribute]
-                accumBufferTime = accumBufferTime + (timeSinceBufferBegin as Long)
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.SEEK_BEGIN) {
-            if (!tracker.state.isSeeking) {
-                tracker.state.isSeeking = true
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.SEEK_FINISH) {
-            if (tracker.state.isSeeking) {
-                tracker.state.isSeeking = false
-                val timeSinceSeekBegin = event.attributes[OAVTAction.SEEK_BEGIN.timeAttribute]
-                accumSeekTime = accumSeekTime + (timeSinceSeekBegin as Long)
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.END || event.action == OAVTAction.STOP || event.action == OAVTAction.NEXT) {
-            if (tracker.state.didStart && !tracker.state.didFinish) {
-                this.instrument?.stopPing(tracker.trackerId!!)
-                tracker.state.didFinish = true
-            }
-            else {
-                return null
-            }
-        }
-        else if (event.action == OAVTAction.ERROR) {
-            countErrors = countErrors + 1
+        if (!acceptOrRejectEvent(event, tracker)) {
+            return null
         }
 
         // Once we get here, the event has been accepted by the Hub
-
 
         timestampOfLastEventOnPlayback = System.currentTimeMillis()
 
@@ -183,6 +82,132 @@ class OAVTHubCore : OAVTHubInterface {
     }
 
     override fun endOfService() {}
+
+    /**
+     * Setup ping timer.
+     *
+     * @param tracker Tracker instance.
+     */
+    open fun startPing(tracker: OAVTTrackerInterface) {
+        this.instrument?.startPing(tracker.trackerId!!, 30)
+    }
+
+    /**
+     * Process event, accepting or rejecting, and mutate states if necessary.
+     *
+     * @param event Event object.
+     * @param tracker Tracker instance.
+     * @return True if accept, false if reject
+     */
+    open fun acceptOrRejectEvent(event: OAVTEvent, tracker: OAVTTrackerInterface) : Boolean {
+        when (event.action) {
+            OAVTAction.MEDIA_REQUEST -> {
+                if (!tracker.state.didMediaRequest) {
+                    tracker.state.didMediaRequest = true
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.PLAYER_SET -> {
+                if (!tracker.state.didPlayerSet) {
+                    tracker.state.didPlayerSet = true
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.STREAM_LOAD -> {
+                if (!tracker.state.didStreamLoad) {
+                    tracker.state.didStreamLoad = true
+                    streamId = UUID.randomUUID().toString()
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.START -> {
+                if (!tracker.state.didStart) {
+                    startPing(tracker)
+                    tracker.state.didStart = true
+                    countStarts = countStarts + 1
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.PAUSE_BEGIN -> {
+                if (tracker.state.didStart && !tracker.state.isPaused) {
+                    tracker.state.isPaused = true
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.PAUSE_FINISH -> {
+                if (tracker.state.didStart && tracker.state.isPaused) {
+                    tracker.state.isPaused = false
+                    val timeSincePauseBegin = event.attributes[OAVTAction.PAUSE_BEGIN.timeAttribute]
+                    accumPauseTime = accumPauseTime + (timeSincePauseBegin as Long)
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.BUFFER_BEGIN -> {
+                if (!tracker.state.isBuffering) {
+                    tracker.state.isBuffering = true
+                    lastBufferBeginInPauseBlock = tracker.state.isPaused
+                    lastBufferBeginInSeekBlock = tracker.state.isSeeking
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.BUFFER_FINISH -> {
+                if (tracker.state.isBuffering) {
+                    tracker.state.isBuffering = false
+                    val timeSinceBufferBegin = event.attributes[OAVTAction.BUFFER_BEGIN.timeAttribute]
+                    accumBufferTime = accumBufferTime + (timeSinceBufferBegin as Long)
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.SEEK_BEGIN -> {
+                if (!tracker.state.isSeeking) {
+                    tracker.state.isSeeking = true
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.SEEK_FINISH -> {
+                if (tracker.state.isSeeking) {
+                    tracker.state.isSeeking = false
+                    val timeSinceSeekBegin = event.attributes[OAVTAction.SEEK_BEGIN.timeAttribute]
+                    accumSeekTime = accumSeekTime + (timeSinceSeekBegin as Long)
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.END, OAVTAction.STOP, OAVTAction.NEXT -> {
+                if (tracker.state.didStart && !tracker.state.didFinish) {
+                    this.instrument?.stopPing(tracker.trackerId!!)
+                    tracker.state.didFinish = true
+                }
+                else {
+                    return false
+                }
+            }
+            OAVTAction.ERROR -> {
+                countErrors = countErrors + 1
+            }
+        }
+
+        return true
+    }
 
     private fun initPlaybackId(event: OAVTEvent) {
         if (event.action == OAVTAction.MEDIA_REQUEST || event.action == OAVTAction.STREAM_LOAD) {

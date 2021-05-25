@@ -1,6 +1,7 @@
 package com.openavt
 
 import android.os.Bundle
+import android.os.WorkSource
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -83,6 +84,18 @@ class AnyTracker : OAVTTrackerInterface {
 }
  */
 
+class MyTracker : OAVTTrackerExoPlayer() {
+    private var source : String? = null
+
+    fun setSource(source: String) {
+        this.source = source
+    }
+
+    override fun getSource(): String? {
+        return this.source
+    }
+}
+
 lateinit var instrument : OAVTInstrument
 var trackerId : Int = 0
 
@@ -98,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         OAVTLog.verbose("----------- START HERE -----------")
 
         instrument = OAVTInstrument(hub = OAVTHubCore(), backend = AnyBackend())
-        trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
+        trackerId = instrument.addTracker(MyTracker())
         instrument.ready()
 
         //playVideo("https://demos.transloadit.com/dashtest/my_playlist.mpd")
@@ -110,6 +123,11 @@ class MainActivity : AppCompatActivity() {
 
         // Set player into tracker
         (instrument.getTracker(trackerId) as OAVTTrackerExoPlayer).setPlayer(player!!)
+
+        // Set video source
+        if (instrument.getTracker(trackerId) is MyTracker) {
+            (instrument.getTracker(trackerId) as MyTracker).setSource(videoUrl)
+        }
 
         val playerView = findViewById<PlayerView>(R.id.player)
         playerView.player = player

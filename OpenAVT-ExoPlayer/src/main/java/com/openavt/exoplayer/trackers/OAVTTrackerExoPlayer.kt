@@ -12,7 +12,7 @@ import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTState
 import com.openavt.core.utils.OAVTLog
 
-class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, AnalyticsListener {
+open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, AnalyticsListener {
     override var state: OAVTState = OAVTState()
     override var trackerId: Int? = null
 
@@ -45,7 +45,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @param player SimpleExoPlayer instance.
      */
-    fun setPlayer(player: SimpleExoPlayer) {
+    open fun setPlayer(player: SimpleExoPlayer) {
         if (this.player != null) {
             unregisterListeners()
         }
@@ -57,7 +57,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     /**
      * Unegister player listeners.
      */
-    fun unregisterListeners() {
+    open fun unregisterListeners() {
         player?.removeListener(this)
         player?.removeAnalyticsListener(this)
         player = null
@@ -66,7 +66,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     /**
      * Register player listeners.
      */
-    fun registerListeners() {
+    open fun registerListeners() {
         player?.addListener(this)
         player?.addAnalyticsListener(this)
         this.instrument?.emit(OAVTAction.PLAYER_READY, this)
@@ -123,7 +123,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
     /**
      * Register attributes getters.
      */
-    fun registerGetters() {
+    open fun registerGetters() {
         this.instrument?.registerGetter(OAVTAttribute.TRACKER_TARGET, ::getTrackerTarget, this)
         this.instrument?.registerGetter(OAVTAttribute.POSITION, ::getPosition, this)
         this.instrument?.registerGetter(OAVTAttribute.DURATION, ::getDuration, this)
@@ -146,7 +146,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getTrackerTarget() : String {
+    open fun getTrackerTarget() : String {
         return "ExoPlayer"
     }
 
@@ -155,7 +155,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getPosition() : Long? {
+    open fun getPosition() : Long? {
         return player?.contentPosition
     }
 
@@ -164,7 +164,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getDuration() : Long? {
+    open fun getDuration() : Long? {
         return player?.duration
     }
 
@@ -173,7 +173,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getResolutionHeight() : Int? {
+    open fun getResolutionHeight() : Int? {
         return player?.videoFormat?.height
     }
 
@@ -182,7 +182,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getResolutionWidth() : Int? {
+    open fun getResolutionWidth() : Int? {
         return player?.videoFormat?.width
     }
 
@@ -191,7 +191,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getVolume() : Float? {
+    open fun getVolume() : Float? {
         return player?.volume
     }
 
@@ -200,7 +200,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getIsMuted() : Boolean? {
+    open fun getIsMuted() : Boolean? {
         return if (getVolume() != null) getVolume() == 0f else null
     }
 
@@ -209,7 +209,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getFps() : Float? {
+    open fun getFps() : Float? {
         return player?.videoFormat?.frameRate
     }
 
@@ -218,7 +218,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getSource() : String? {
+    open fun getSource() : String? {
         return null
     }
 
@@ -227,7 +227,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getBitrate() : Long? {
+    open fun getBitrate() : Long? {
         return bitrateEstimate
     }
 
@@ -236,7 +236,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getLanguage() : String? {
+    open fun getLanguage() : String? {
         return null
     }
 
@@ -245,7 +245,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getSubtitles() : String? {
+    open fun getSubtitles() : String? {
         return null
     }
 
@@ -254,11 +254,9 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
      *
      * @return attribute.
      */
-    fun getIsAdsTracker() : Boolean {
+    open fun getIsAdsTracker() : Boolean {
         return false
     }
-
-    //TODO: check resolution change
 
     // ExoPlayer event listener methods
 
@@ -358,7 +356,7 @@ class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, Analy
         checkResolutionChange()
     }
 
-    fun checkResolutionChange() {
+    private fun checkResolutionChange() {
         val currH = getResolutionHeight()
         val currW = getResolutionWidth()
         if (currH != null && currW != null) {
