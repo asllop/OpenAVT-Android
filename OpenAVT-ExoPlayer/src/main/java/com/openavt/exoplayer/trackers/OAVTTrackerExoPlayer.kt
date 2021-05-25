@@ -285,6 +285,9 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
                 instrument?.emit(OAVTAction.END, this)
                 userRequested = false
             }
+            Player.STATE_IDLE -> {
+                OAVTLog.verbose("STATE: STATE_IDLE")
+            }
         }
     }
 
