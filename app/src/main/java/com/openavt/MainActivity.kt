@@ -1,11 +1,19 @@
 package com.openavt
 
+import android.net.Uri
 import android.os.Bundle
-import android.os.WorkSource
 import androidx.appcompat.app.AppCompatActivity
+import com.google.ads.interactivemedia.v3.api.AdErrorEvent
+import com.google.ads.interactivemedia.v3.api.AdEvent
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.MediaItem.AdsConfiguration
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.Util
 import com.openavt.core.OAVTInstrument
 import com.openavt.core.hubs.OAVTHubCore
 import com.openavt.core.interfaces.OAVTBackendInterface
@@ -51,37 +59,6 @@ class AnyMetricalc : OAVTMetricalcInterface {
     }
 
 }
-
-class AnyTracker : OAVTTrackerInterface {
-    private var instrument: OAVTInstrument? = null
-
-    override var state = OAVTState()
-    override var trackerId: Int? = null
-
-    override fun initEvent(event: OAVTEvent): OAVTEvent? {
-        OAVTLog.verbose(  "AnyTracker initEvent from Id = " + trackerId)
-        event.attributes[OAVTAttribute.TITLE] = "Space balls"
-        event.attributes[OAVTAttribute.VOLUME] = 100
-        instrument?.let { it.useGetter(OAVTAttribute.DURATION, event, this) }
-
-        return event
-    }
-
-    override fun instrumentReady(instrument: OAVTInstrument) {
-        OAVTLog.verbose(  "AnyTracker instrumentReady from Id = " + trackerId)
-        this.instrument = instrument
-        instrument.registerGetter(OAVTAttribute.DURATION, ::getAttrDuration, this)
-    }
-
-    override fun endOfService() {
-        OAVTLog.verbose(  "AnyTracker endOfService from Id = " + trackerId)
-    }
-
-    fun getAttrDuration(): Int {
-        OAVTLog.verbose(  "AnyTracker getAttrDuration, this = " + this)
-        return 1234
-    }
-}
  */
 
 class MyTracker : OAVTTrackerExoPlayer() {
@@ -99,8 +76,9 @@ class MyTracker : OAVTTrackerExoPlayer() {
 lateinit var instrument : OAVTInstrument
 var trackerId : Int = 0
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), AdErrorEvent.AdErrorListener, AdEvent.AdEventListener {
     private var player: SimpleExoPlayer? = null
+    private var adsLoader: ImaAdsLoader? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,7 +93,8 @@ class MainActivity : AppCompatActivity() {
         instrument.ready()
 
         //playVideo("https://demos.transloadit.com/dashtest/my_playlist.mpd")
-        playVideo("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
+        //playVideo("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
+        playVideoWithAds("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
     }
 
     private fun playVideo(videoUrl: String) {
@@ -136,5 +115,44 @@ class MainActivity : AppCompatActivity() {
         // Prepare the player.
         player!!.setPlayWhenReady(true)
         player!!.prepare()
+    }
+
+    private fun playVideoWithAds(videoUrl: String) {
+        val builder = ImaAdsLoader.Builder(this)
+        builder.setAdErrorListener(this)
+        builder.setAdEventListener(this)
+        adsLoader = builder.build()
+
+        val playerView = findViewById<PlayerView>(R.id.player)
+        val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(this, Util.getUserAgent(this, getString(R.string.app_name)))
+        val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
+        mediaSourceFactory.setAdsLoaderProvider { unusedAdTagUri: AdsConfiguration? -> adsLoader }
+        mediaSourceFactory.setAdViewProvider(playerView)
+
+        player = SimpleExoPlayer.Builder(this).setMediaSourceFactory(mediaSourceFactory).build()
+
+        // Set player into tracker
+        (instrument.getTracker(trackerId) as OAVTTrackerExoPlayer).setPlayer(player!!)
+
+        playerView.setPlayer(player)
+        adsLoader!!.setPlayer(player)
+
+        val contentUri = Uri.parse(videoUrl)
+        val adTagUri = Uri.parse("http://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=xml_vmap1&unviewed_position_start=1&cust_params=sample_ar%3Dpremidpostpod%26deployment%3Dgmf-js&cmsid=496&vid=short_onecue&correlator=")
+        val mediaItem = MediaItem.Builder().setUri(contentUri).setAdTagUri(adTagUri).build()
+
+        player!!.setMediaItem(mediaItem)
+        player!!.playWhenReady = true
+        player!!.prepare()
+    }
+
+    //AdErrorEvent.AdErrorListener
+    override fun onAdError(adErrorEvent: AdErrorEvent?) {
+        OAVTLog.verbose("onAdError: " + adErrorEvent)
+    }
+
+    //AdEvent.AdEventListener
+    override fun onAdEvent(adEvent: AdEvent?) {
+        OAVTLog.verbose("onAdEvent: " + adEvent)
     }
 }
