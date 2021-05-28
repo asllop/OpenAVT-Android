@@ -103,9 +103,7 @@ class MainActivity : AppCompatActivity() {
         (instrument.getTracker(trackerId) as OAVTTrackerExoPlayer).setPlayer(player!!)
 
         // Set video source
-        if (instrument.getTracker(trackerId) is MyTracker) {
-            (instrument.getTracker(trackerId) as MyTracker).setSource(videoUrl)
-        }
+        (instrument.getTracker(trackerId) as? MyTracker)?.setSource(videoUrl)
 
         val playerView = findViewById<PlayerView>(R.id.player)
         playerView.player = player
