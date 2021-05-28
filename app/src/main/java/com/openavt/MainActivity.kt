@@ -3,8 +3,6 @@ package com.openavt
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.google.ads.interactivemedia.v3.api.AdErrorEvent
-import com.google.ads.interactivemedia.v3.api.AdEvent
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.MediaItem.AdsConfiguration
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -21,6 +19,7 @@ import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTMetric
 import com.openavt.core.utils.OAVTLog
 import com.openavt.exoplayer.trackers.OAVTTrackerExoPlayer
+import com.openavt.ima.trackers.OAVTTrackerIMA
 
 class AnyBackend : OAVTBackendInterface {
     override fun sendEvent(event: OAVTEvent) {
@@ -57,7 +56,6 @@ class AnyMetricalc : OAVTMetricalcInterface {
     override fun endOfService() {
         OAVTLog.verbose(  "AnyMetricalc endOfService")
     }
-
 }
  */
 
@@ -73,12 +71,13 @@ class MyTracker : OAVTTrackerExoPlayer() {
     }
 }
 
-lateinit var instrument : OAVTInstrument
-var trackerId : Int = 0
+class MainActivity : AppCompatActivity() {
+    var player: SimpleExoPlayer? = null
+    var adsLoader: ImaAdsLoader? = null
 
-class MainActivity : AppCompatActivity(), AdErrorEvent.AdErrorListener, AdEvent.AdEventListener {
-    private var player: SimpleExoPlayer? = null
-    private var adsLoader: ImaAdsLoader? = null
+    lateinit var instrument : OAVTInstrument
+    var trackerId : Int = -1
+    var adTrackerId : Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,9 +117,13 @@ class MainActivity : AppCompatActivity(), AdErrorEvent.AdErrorListener, AdEvent.
     }
 
     private fun playVideoWithAds(videoUrl: String) {
+
+        adTrackerId = instrument.addTracker(OAVTTrackerIMA())
+        instrument.ready()
+
         val builder = ImaAdsLoader.Builder(this)
-        builder.setAdErrorListener(this)
-        builder.setAdEventListener(this)
+        builder.setAdErrorListener(instrument.getTracker(adTrackerId) as OAVTTrackerIMA)
+        builder.setAdEventListener(instrument.getTracker(adTrackerId) as OAVTTrackerIMA)
         adsLoader = builder.build()
 
         val playerView = findViewById<PlayerView>(R.id.player)
@@ -144,15 +147,5 @@ class MainActivity : AppCompatActivity(), AdErrorEvent.AdErrorListener, AdEvent.
         player!!.setMediaItem(mediaItem)
         player!!.playWhenReady = true
         player!!.prepare()
-    }
-
-    //AdErrorEvent.AdErrorListener
-    override fun onAdError(adErrorEvent: AdErrorEvent?) {
-        OAVTLog.verbose("onAdError: " + adErrorEvent)
-    }
-
-    //AdEvent.AdEventListener
-    override fun onAdEvent(adEvent: AdEvent?) {
-        OAVTLog.verbose("onAdEvent: " + adEvent)
     }
 }

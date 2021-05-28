@@ -1,3 +1,4 @@
+include ':OpenAVT-IMA'
 include ':OpenAVT-ExoPlayer'
 include ':OpenAVT-Core'
 include ':app'
