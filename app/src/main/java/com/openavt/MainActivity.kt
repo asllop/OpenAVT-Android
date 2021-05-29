@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.MediaItem.AdsConfiguration
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
@@ -110,7 +109,7 @@ class MainActivity : AppCompatActivity() {
         player!!.setMediaItem(MediaItem.fromUri(videoUrl))
 
         // Prepare the player.
-        player!!.setPlayWhenReady(true)
+        player!!.playWhenReady = true
         player!!.prepare()
     }
 
@@ -127,7 +126,7 @@ class MainActivity : AppCompatActivity() {
         val playerView = findViewById<PlayerView>(R.id.player)
         val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(this, Util.getUserAgent(this, getString(R.string.app_name)))
         val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
-        mediaSourceFactory.setAdsLoaderProvider { unusedAdTagUri: AdsConfiguration? -> adsLoader }
+        mediaSourceFactory.setAdsLoaderProvider { adsLoader }
         mediaSourceFactory.setAdViewProvider(playerView)
 
         player = SimpleExoPlayer.Builder(this).setMediaSourceFactory(mediaSourceFactory).build()
@@ -135,7 +134,7 @@ class MainActivity : AppCompatActivity() {
         // Set player into tracker
         (instrument.getTracker(trackerId) as OAVTTrackerExoPlayer).setPlayer(player!!)
 
-        playerView.setPlayer(player)
+        playerView.player = player
         adsLoader!!.setPlayer(player)
 
         val contentUri = Uri.parse(videoUrl)
