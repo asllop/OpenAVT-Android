@@ -77,6 +77,8 @@ class OAVTAttribute(name: String) {
         val ERROR_DESCRIPTION = OAVTAttribute("errorDescription")
         /** Error Type attribute. Error type. */
         val ERROR_TYPE = OAVTAttribute("errorType")
+        /** Error Code attribute. Error code. */
+        val ERROR_CODE = OAVTAttribute("errorCode")
         /** Position attribute. Current stream position. */
         val POSITION = OAVTAttribute("position")
         /** Duration attribute. Stream duration. */

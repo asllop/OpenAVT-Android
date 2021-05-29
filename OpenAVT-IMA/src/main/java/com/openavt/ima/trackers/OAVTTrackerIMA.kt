@@ -1,6 +1,7 @@
 package com.openavt.ima.trackers
 
 import com.google.ads.interactivemedia.v3.api.Ad
+import com.google.ads.interactivemedia.v3.api.AdError
 import com.google.ads.interactivemedia.v3.api.AdErrorEvent
 import com.google.ads.interactivemedia.v3.api.AdEvent
 import com.openavt.core.OAVTInstrument
@@ -16,8 +17,8 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
     override var trackerId: Int? = null
 
     private var instrument: OAVTInstrument? = null
-
-    private var adPosition: String? = null
+    private var lastAdError: AdError? = null
+    private var adRoll: String? = null
     private var creativeId: String? = null
     private var title: String? = null
     private var bitrate: Long? = null
@@ -26,11 +27,25 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
     private var duration: Long? = null
 
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
-        //TODO: set error attributes
+        if (event.action == OAVTAction.AD_ERROR) {
+            lastAdError?.let {
+                val type : String
+                when (it.errorType) {
+                    AdError.AdErrorType.LOAD -> type = "load"
+                    AdError.AdErrorType.PLAY -> type = "play"
+                    else -> type = ""
+                }
+
+                event.attributes[OAVTAttribute.ERROR_DESCRIPTION] = it.message as String
+                event.attributes[OAVTAttribute.ERROR_TYPE] = type
+                event.attributes[OAVTAttribute.ERROR_CODE] = it.errorCodeNumber
+                lastAdError = null
+            }
+        }
 
         // Set attributes from getters
         this.instrument?.useGetter(OAVTAttribute.TRACKER_TARGET, event, this)
-        this.instrument?.useGetter(OAVTAttribute.AD_POSITION, event, this)
+        this.instrument?.useGetter(OAVTAttribute.AD_ROLL, event, this)
         this.instrument?.useGetter(OAVTAttribute.AD_DURATION, event, this)
         this.instrument?.useGetter(OAVTAttribute.AD_RESOLUTION_HEIGHT, event, this)
         this.instrument?.useGetter(OAVTAttribute.AD_RESOLUTION_WIDTH, event, this)
@@ -58,7 +73,7 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
      */
     open fun registerGetters() {
         this.instrument?.registerGetter(OAVTAttribute.TRACKER_TARGET, ::getTrackerTarget, this)
-        this.instrument?.registerGetter(OAVTAttribute.AD_POSITION, ::getAdPosition, this)
+        this.instrument?.registerGetter(OAVTAttribute.AD_ROLL, ::getAdRoll, this)
         this.instrument?.registerGetter(OAVTAttribute.AD_DURATION, ::getAdDuration, this)
         this.instrument?.registerGetter(OAVTAttribute.AD_RESOLUTION_HEIGHT, ::getAdResolutionHeight, this)
         this.instrument?.registerGetter(OAVTAttribute.AD_RESOLUTION_WIDTH, ::getAdResolutionWidth, this)
@@ -71,17 +86,17 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
     // AdErrorEvent and AdEvent listeners
 
     override fun onAdError(adError: AdErrorEvent?) {
-        //TODO: error attributes
-        OAVTLog.verbose("----> IMA Tracker onAdError " + adError)
+        OAVTLog.error("IMA Tracker onAdError " + adError)
+        lastAdError = adError?.error
         instrument!!.emit(OAVTAction.AD_ERROR, this)
     }
 
     override fun onAdEvent(adEvent: AdEvent?) {
-        if (adEvent == null) return
-
-        if (adEvent.getType() !== AdEvent.AdEventType.AD_PROGRESS) {
-            OAVTLog.verbose("----> IMA Tracker onAdEvent " + adEvent)
+        if (adEvent == null || adEvent.type == AdEvent.AdEventType.AD_PROGRESS) {
+            return
         }
+
+        OAVTLog.verbose("IMA Tracker onAdEvent " + adEvent)
 
         generateAdAttributes(adEvent.ad)
 
@@ -126,7 +141,7 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
 
     private fun generateAdAttributes(ad: Ad?) {
         if (ad == null) return
-        adPosition = when (ad.adPodInfo.podIndex) {
+        adRoll = when (ad.adPodInfo.podIndex) {
             0 -> "pre"
             -1 -> "post"
             else -> "mid"
@@ -149,12 +164,12 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
     }
 
     /**
-     * Get Ad Position.
+     * Get Ad Roll.
      *
      * @return Attribute.
      */
-    open fun getAdPosition(): String? {
-        return adPosition
+    open fun getAdRoll(): String? {
+        return adRoll
     }
 
     /**
