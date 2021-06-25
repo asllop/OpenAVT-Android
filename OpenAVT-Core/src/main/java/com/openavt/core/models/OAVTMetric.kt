@@ -43,20 +43,20 @@ class OAVTMetric(name: String, type: MetricType, value: Number): OAVTSample() {
 
     companion object {
         /** Start time metric name. */
-        fun START_TIME(value: Int) = OAVTMetric("startTime", MetricType.Gauge, value)
+        fun StartTime(value: Int) = OAVTMetric("StartTime", MetricType.Gauge, value)
         /** Number of streams played metric name. */
-        fun NUM_PLAYS(value: Int) = OAVTMetric("numPlays", MetricType.Counter, value)
+        fun NumPlays(value: Int) = OAVTMetric("NumPlays", MetricType.Counter, value)
         /** Rebuffer time metric name. */
-        fun REBUFFER_TIME(value: Int) = OAVTMetric("rebufferTime", MetricType.Gauge, value)
+        fun RebufferTime(value: Int) = OAVTMetric("RebufferTime", MetricType.Gauge, value)
         /** Number of rebufers metric name. */
-        fun NUM_REBUFFERS(value: Int) = OAVTMetric("numRebuffers", MetricType.Counter, value)
+        fun NumRebuffers(value: Int) = OAVTMetric("NumRebuffers", MetricType.Counter, value)
         /** Playtime since last event. */
-        fun PLAY_TIME(value: Int) = OAVTMetric("playTime", MetricType.Gauge, value)
+        fun PlayTime(value: Int) = OAVTMetric("PlayTime", MetricType.Gauge, value)
         /** Number of streams requested metric name. */
-        fun NUM_REQUESTS(value: Int) = OAVTMetric("numRequests", MetricType.Counter, value)
+        fun NumRequests(value: Int) = OAVTMetric("NumRequests", MetricType.Counter, value)
         /** Number of streams loaded metric name. */
-        fun NUM_LOADS(value: Int) = OAVTMetric("numLoads", MetricType.Counter, value)
+        fun NumLoads(value: Int) = OAVTMetric("NumLoads", MetricType.Counter, value)
         /** Number of streams ended metric name. */
-        fun NUM_ENDS(value: Int) = OAVTMetric("numEnds", MetricType.Counter, value)
+        fun NumEnds(value: Int) = OAVTMetric("NumEnds", MetricType.Counter, value)
     }
 }

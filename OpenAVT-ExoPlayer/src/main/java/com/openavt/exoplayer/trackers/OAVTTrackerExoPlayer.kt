@@ -50,7 +50,7 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
             unregisterListeners()
         }
         this.player = player
-        this.instrument!!.emit(OAVTAction.PLAYER_SET, this)
+        this.instrument!!.emit(OAVTAction.PlayerSet, this)
         registerListeners()
     }
 
@@ -69,11 +69,11 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
     open fun registerListeners() {
         player?.addListener(this)
         player?.addAnalyticsListener(this)
-        this.instrument?.emit(OAVTAction.PLAYER_READY, this)
+        this.instrument?.emit(OAVTAction.PlayerReady, this)
     }
 
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
-        if (event.action == OAVTAction.ERROR) {
+        if (event.action == OAVTAction.Error) {
             lastError?.let {
                 val type : String?
                 when (it.type) {
@@ -84,26 +84,26 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
                     else -> type = null
                 }
 
-                event.attributes[OAVTAttribute.ERROR_DESCRIPTION] = it.message ?: ""
-                event.attributes[OAVTAttribute.ERROR_TYPE] = type ?: ""
+                event.attributes[OAVTAttribute.errorDescription] = it.message ?: ""
+                event.attributes[OAVTAttribute.errorType] = type ?: ""
                 lastError = null
             }
         }
 
         // Set attributes from getters
-        instrument?.useGetter(OAVTAttribute.TRACKER_TARGET, event, this)
-        instrument?.useGetter(OAVTAttribute.POSITION, event, this)
-        instrument?.useGetter(OAVTAttribute.DURATION, event, this)
-        instrument?.useGetter(OAVTAttribute.RESOLUTION_HEIGHT, event, this)
-        instrument?.useGetter(OAVTAttribute.RESOLUTION_WIDTH, event, this)
-        instrument?.useGetter(OAVTAttribute.IS_MUTED, event, this)
-        instrument?.useGetter(OAVTAttribute.VOLUME, event, this)
-        instrument?.useGetter(OAVTAttribute.FPS, event, this)
-        instrument?.useGetter(OAVTAttribute.SOURCE, event, this)
-        instrument?.useGetter(OAVTAttribute.BITRATE, event, this)
-        instrument?.useGetter(OAVTAttribute.LANGUAGE, event, this)
-        instrument?.useGetter(OAVTAttribute.SUBTITLES, event, this)
-        instrument?.useGetter(OAVTAttribute.IS_ADS_TRACKER, event, this)
+        instrument?.useGetter(OAVTAttribute.trackerTarget, event, this)
+        instrument?.useGetter(OAVTAttribute.position, event, this)
+        instrument?.useGetter(OAVTAttribute.duration, event, this)
+        instrument?.useGetter(OAVTAttribute.resolutionHeight, event, this)
+        instrument?.useGetter(OAVTAttribute.resolutionWidth, event, this)
+        instrument?.useGetter(OAVTAttribute.isMuted, event, this)
+        instrument?.useGetter(OAVTAttribute.volume, event, this)
+        instrument?.useGetter(OAVTAttribute.fps, event, this)
+        instrument?.useGetter(OAVTAttribute.source, event, this)
+        instrument?.useGetter(OAVTAttribute.bitrate, event, this)
+        instrument?.useGetter(OAVTAttribute.language, event, this)
+        instrument?.useGetter(OAVTAttribute.subtitles, event, this)
+        instrument?.useGetter(OAVTAttribute.isAdsTracker, event, this)
 
         return event
     }
@@ -112,7 +112,7 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
         if (this.instrument == null) {
             this.instrument = instrument
             registerGetters()
-            this.instrument?.emit(OAVTAction.TRACKER_INIT, this)
+            this.instrument?.emit(OAVTAction.TrackerInit, this)
         }
     }
 
@@ -124,19 +124,19 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
      * Register attributes getters.
      */
     open fun registerGetters() {
-        this.instrument?.registerGetter(OAVTAttribute.TRACKER_TARGET, ::getTrackerTarget, this)
-        this.instrument?.registerGetter(OAVTAttribute.POSITION, ::getPosition, this)
-        this.instrument?.registerGetter(OAVTAttribute.DURATION, ::getDuration, this)
-        this.instrument?.registerGetter(OAVTAttribute.RESOLUTION_HEIGHT, ::getResolutionHeight, this)
-        this.instrument?.registerGetter(OAVTAttribute.RESOLUTION_WIDTH, ::getResolutionWidth, this)
-        this.instrument?.registerGetter(OAVTAttribute.IS_MUTED, ::getIsMuted, this)
-        this.instrument?.registerGetter(OAVTAttribute.VOLUME, ::getVolume, this)
-        this.instrument?.registerGetter(OAVTAttribute.FPS, ::getFps, this)
-        this.instrument?.registerGetter(OAVTAttribute.SOURCE, ::getSource, this)
-        this.instrument?.registerGetter(OAVTAttribute.BITRATE, ::getBitrate, this)
-        this.instrument?.registerGetter(OAVTAttribute.LANGUAGE, ::getLanguage, this)
-        this.instrument?.registerGetter(OAVTAttribute.SUBTITLES, ::getSubtitles, this)
-        this.instrument?.registerGetter(OAVTAttribute.IS_ADS_TRACKER, ::getIsAdsTracker, this)
+        this.instrument?.registerGetter(OAVTAttribute.trackerTarget, ::getTrackerTarget, this)
+        this.instrument?.registerGetter(OAVTAttribute.position, ::getPosition, this)
+        this.instrument?.registerGetter(OAVTAttribute.duration, ::getDuration, this)
+        this.instrument?.registerGetter(OAVTAttribute.resolutionHeight, ::getResolutionHeight, this)
+        this.instrument?.registerGetter(OAVTAttribute.resolutionWidth, ::getResolutionWidth, this)
+        this.instrument?.registerGetter(OAVTAttribute.isMuted, ::getIsMuted, this)
+        this.instrument?.registerGetter(OAVTAttribute.volume, ::getVolume, this)
+        this.instrument?.registerGetter(OAVTAttribute.fps, ::getFps, this)
+        this.instrument?.registerGetter(OAVTAttribute.source, ::getSource, this)
+        this.instrument?.registerGetter(OAVTAttribute.bitrate, ::getBitrate, this)
+        this.instrument?.registerGetter(OAVTAttribute.language, ::getLanguage, this)
+        this.instrument?.registerGetter(OAVTAttribute.subtitles, ::getSubtitles, this)
+        this.instrument?.registerGetter(OAVTAttribute.isAdsTracker, ::getIsAdsTracker, this)
     }
 
     // Attribute getters
@@ -266,23 +266,23 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
         when (state) {
             Player.STATE_BUFFERING -> {
                 OAVTLog.verbose("STATE: STATE_BUFFERING")
-                instrument?.emit(OAVTAction.STREAM_LOAD, this)
-                instrument?.emit(OAVTAction.BUFFER_BEGIN, this)
+                instrument?.emit(OAVTAction.StreamLoad, this)
+                instrument?.emit(OAVTAction.BufferBegin, this)
 
             }
             Player.STATE_READY -> {
                 OAVTLog.verbose("STATE: STATE_READY")
-                instrument?.emit(OAVTAction.BUFFER_FINISH, this)
+                instrument?.emit(OAVTAction.BufferFinish, this)
                 if (userRequested) {
-                    instrument?.emit(OAVTAction.START, this)
+                    instrument?.emit(OAVTAction.Start, this)
                 }
                 if (this.state.isSeeking) {
-                    instrument?.emit(OAVTAction.SEEK_FINISH, this)
+                    instrument?.emit(OAVTAction.SeekFinish, this)
                 }
             }
             Player.STATE_ENDED -> {
                 OAVTLog.verbose("STATE: STATE_ENDED")
-                instrument?.emit(OAVTAction.END, this)
+                instrument?.emit(OAVTAction.End, this)
                 userRequested = false
             }
             Player.STATE_IDLE -> {
@@ -308,18 +308,18 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
 
         if (playWhenReady) {
             if (this.state.didStreamLoad) {
-                instrument?.emit(OAVTAction.START, this)
+                instrument?.emit(OAVTAction.Start, this)
             }
-            instrument?.emit(OAVTAction.PAUSE_FINISH, this)
+            instrument?.emit(OAVTAction.PauseFinish, this)
         }
         else {
-            instrument?.emit(OAVTAction.PAUSE_BEGIN, this)
+            instrument?.emit(OAVTAction.PauseBegin, this)
         }
     }
 
     override fun onSeekStarted(eventTime: AnalyticsListener.EventTime) {
         super.onSeekStarted(eventTime)
-        instrument?.emit(OAVTAction.SEEK_BEGIN, this)
+        instrument?.emit(OAVTAction.SeekBegin, this)
     }
 
     override fun onBandwidthEstimate(
@@ -338,7 +338,7 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
     ) {
         super<AnalyticsListener>.onPlayerError(eventTime, error)
         this.lastError = error;
-        instrument?.emit(OAVTAction.ERROR, this)
+        instrument?.emit(OAVTAction.Error, this)
     }
 
     override fun onVideoSizeChanged(
@@ -372,10 +372,10 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
                         val currMul = currH * currW
 
                         if (lastMul > currMul) {
-                            instrument?.emit(OAVTAction.QUALITY_CHANGE_DOWN, this)
+                            instrument?.emit(OAVTAction.QualityChangeDown, this)
                         }
                         else if (lastMul < currMul) {
-                            instrument?.emit(OAVTAction.QUALITY_CHANGE_UP, this)
+                            instrument?.emit(OAVTAction.QualityChangeUp, this)
                         }
 
                 lastResolutionHeight = currH

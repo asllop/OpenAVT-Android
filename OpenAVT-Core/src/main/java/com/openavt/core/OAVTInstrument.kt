@@ -209,7 +209,7 @@ class OAVTInstrument() {
                 val handler = Handler(Looper.getMainLooper())
                 handler.post(Runnable {
                     OAVTLog.verbose("Send PING from trackerdId = " + trackerId)
-                    this@OAVTInstrument.emit(OAVTAction.PING, trackerId)
+                    this@OAVTInstrument.emit(OAVTAction.Ping, trackerId)
                 })
             }
         }, interval * 1000, interval * 1000)
@@ -349,7 +349,7 @@ class OAVTInstrument() {
     }
 
     private fun generateSenderId(tracker: OAVTTrackerInterface, event: OAVTEvent) {
-        event.attributes[OAVTAttribute.SENDER_ID] = instrumentId + "-" + (tracker.trackerId ?: "?")
+        event.attributes[OAVTAttribute.senderId] = instrumentId + "-" + (tracker.trackerId ?: "?")
     }
 
     private fun generateTimeSince(event: OAVTEvent) {

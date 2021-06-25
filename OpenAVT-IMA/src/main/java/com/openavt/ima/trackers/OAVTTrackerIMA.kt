@@ -27,7 +27,7 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
     private var duration: Long? = null
 
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
-        if (event.action == OAVTAction.AD_ERROR) {
+        if (event.action == OAVTAction.AdError) {
             lastAdError?.let {
                 val type : String
                 when (it.errorType) {
@@ -36,23 +36,23 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
                     else -> type = ""
                 }
 
-                event.attributes[OAVTAttribute.ERROR_DESCRIPTION] = it.message as String
-                event.attributes[OAVTAttribute.ERROR_TYPE] = type
-                event.attributes[OAVTAttribute.ERROR_CODE] = it.errorCodeNumber
+                event.attributes[OAVTAttribute.errorDescription] = it.message as String
+                event.attributes[OAVTAttribute.errorType] = type
+                event.attributes[OAVTAttribute.errorCode] = it.errorCodeNumber
                 lastAdError = null
             }
         }
 
         // Set attributes from getters
-        this.instrument?.useGetter(OAVTAttribute.TRACKER_TARGET, event, this)
-        this.instrument?.useGetter(OAVTAttribute.AD_ROLL, event, this)
-        this.instrument?.useGetter(OAVTAttribute.AD_DURATION, event, this)
-        this.instrument?.useGetter(OAVTAttribute.AD_RESOLUTION_HEIGHT, event, this)
-        this.instrument?.useGetter(OAVTAttribute.AD_RESOLUTION_WIDTH, event, this)
-        this.instrument?.useGetter(OAVTAttribute.AD_BITRATE, event, this)
-        this.instrument?.useGetter(OAVTAttribute.AD_CREATIVE_ID, event, this)
-        this.instrument?.useGetter(OAVTAttribute.AD_TITLE, event, this)
-        this.instrument?.useGetter(OAVTAttribute.IS_ADS_TRACKER, event, this)
+        this.instrument?.useGetter(OAVTAttribute.trackerTarget, event, this)
+        this.instrument?.useGetter(OAVTAttribute.adRoll, event, this)
+        this.instrument?.useGetter(OAVTAttribute.adDuration, event, this)
+        this.instrument?.useGetter(OAVTAttribute.adResolutionHeight, event, this)
+        this.instrument?.useGetter(OAVTAttribute.adResolutionWidth, event, this)
+        this.instrument?.useGetter(OAVTAttribute.adBitrate, event, this)
+        this.instrument?.useGetter(OAVTAttribute.adCreativeId, event, this)
+        this.instrument?.useGetter(OAVTAttribute.adTitle, event, this)
+        this.instrument?.useGetter(OAVTAttribute.isAdsTracker, event, this)
 
         return event
     }
@@ -61,7 +61,7 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
         if (this.instrument == null) {
             this.instrument = instrument
             registerGetters()
-            this.instrument?.emit(OAVTAction.TRACKER_INIT, this)
+            this.instrument?.emit(OAVTAction.TrackerInit, this)
         }
     }
 
@@ -72,15 +72,15 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
      * Register attributes getters.
      */
     open fun registerGetters() {
-        this.instrument?.registerGetter(OAVTAttribute.TRACKER_TARGET, ::getTrackerTarget, this)
-        this.instrument?.registerGetter(OAVTAttribute.AD_ROLL, ::getAdRoll, this)
-        this.instrument?.registerGetter(OAVTAttribute.AD_DURATION, ::getAdDuration, this)
-        this.instrument?.registerGetter(OAVTAttribute.AD_RESOLUTION_HEIGHT, ::getAdResolutionHeight, this)
-        this.instrument?.registerGetter(OAVTAttribute.AD_RESOLUTION_WIDTH, ::getAdResolutionWidth, this)
-        this.instrument?.registerGetter(OAVTAttribute.AD_BITRATE, ::getAdBitrate, this)
-        this.instrument?.registerGetter(OAVTAttribute.AD_CREATIVE_ID, ::getAdCreativeId, this)
-        this.instrument?.registerGetter(OAVTAttribute.AD_TITLE, ::getAdTitle, this)
-        this.instrument?.registerGetter(OAVTAttribute.IS_ADS_TRACKER, ::getIsAdsTracker, this)
+        this.instrument?.registerGetter(OAVTAttribute.trackerTarget, ::getTrackerTarget, this)
+        this.instrument?.registerGetter(OAVTAttribute.adRoll, ::getAdRoll, this)
+        this.instrument?.registerGetter(OAVTAttribute.adDuration, ::getAdDuration, this)
+        this.instrument?.registerGetter(OAVTAttribute.adResolutionHeight, ::getAdResolutionHeight, this)
+        this.instrument?.registerGetter(OAVTAttribute.adResolutionWidth, ::getAdResolutionWidth, this)
+        this.instrument?.registerGetter(OAVTAttribute.adBitrate, ::getAdBitrate, this)
+        this.instrument?.registerGetter(OAVTAttribute.adCreativeId, ::getAdCreativeId, this)
+        this.instrument?.registerGetter(OAVTAttribute.adTitle, ::getAdTitle, this)
+        this.instrument?.registerGetter(OAVTAttribute.isAdsTracker, ::getIsAdsTracker, this)
     }
 
     // AdErrorEvent and AdEvent listeners
@@ -88,7 +88,7 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
     override fun onAdError(adError: AdErrorEvent?) {
         OAVTLog.error("IMA Tracker onAdError " + adError)
         lastAdError = adError?.error
-        instrument!!.emit(OAVTAction.AD_ERROR, this)
+        instrument!!.emit(OAVTAction.AdError, this)
     }
 
     override fun onAdEvent(adEvent: AdEvent?) {
@@ -102,37 +102,37 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
 
         when (adEvent.getType()) {
             AdEvent.AdEventType.CONTENT_PAUSE_REQUESTED -> {
-                instrument!!.emit(OAVTAction.AD_BREAK_BEGIN, this)
+                instrument!!.emit(OAVTAction.AdBreakBegin, this)
             }
             AdEvent.AdEventType.CONTENT_RESUME_REQUESTED -> {
-                instrument!!.emit(OAVTAction.AD_BREAK_FINISH, this)
+                instrument!!.emit(OAVTAction.AdBreakFinish, this)
             }
             AdEvent.AdEventType.STARTED -> {
-                instrument!!.emit(OAVTAction.AD_BEGIN, this)
+                instrument!!.emit(OAVTAction.AdBegin, this)
             }
             AdEvent.AdEventType.COMPLETED -> {
-                instrument!!.emit(OAVTAction.AD_FINISH, this)
+                instrument!!.emit(OAVTAction.AdFinish, this)
             }
             AdEvent.AdEventType.TAPPED, AdEvent.AdEventType.CLICKED -> {
-                instrument!!.emit(OAVTAction.AD_CLICK, this)
+                instrument!!.emit(OAVTAction.AdClick, this)
             }
             AdEvent.AdEventType.SKIPPED -> {
-                instrument!!.emit(OAVTAction.AD_SKIP, this)
+                instrument!!.emit(OAVTAction.AdSkip, this)
             }
             AdEvent.AdEventType.FIRST_QUARTILE -> {
-                instrument!!.emit(OAVTAction.AD_FIRST_QUARTILE, this)
+                instrument!!.emit(OAVTAction.AdFirstQuartile, this)
             }
             AdEvent.AdEventType.MIDPOINT -> {
-                instrument!!.emit(OAVTAction.AD_SECOND_QUARTILE, this)
+                instrument!!.emit(OAVTAction.AdSecondQuartile, this)
             }
             AdEvent.AdEventType.THIRD_QUARTILE -> {
-                instrument!!.emit(OAVTAction.AD_THIRD_QUARTILE, this)
+                instrument!!.emit(OAVTAction.AdThirdQuartile, this)
             }
             AdEvent.AdEventType.PAUSED -> {
-                instrument!!.emit(OAVTAction.AD_PAUSE_BEGIN, this)
+                instrument!!.emit(OAVTAction.AdPauseBegin, this)
             }
             AdEvent.AdEventType.RESUMED -> {
-                instrument!!.emit(OAVTAction.AD_PAUSE_FINISH, this)
+                instrument!!.emit(OAVTAction.AdPauseFinish, this)
             }
         }
     }
