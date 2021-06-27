@@ -13,6 +13,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.openavt.core.OAVTInstrument
 import com.openavt.core.hubs.OAVTHubCore
+import com.openavt.core.hubs.OAVTHubCoreAds
 import com.openavt.core.interfaces.OAVTBackendInterface
 import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTMetric
@@ -86,16 +87,16 @@ class MainActivity : AppCompatActivity() {
 
         OAVTLog.verbose("----------- START HERE -----------")
 
-        instrument = OAVTInstrument(hub = OAVTHubCore(), backend = AnyBackend())
-        trackerId = instrument.addTracker(MyTracker())
-        instrument.ready()
-
         //playVideo("https://demos.transloadit.com/dashtest/my_playlist.mpd")
         //playVideo("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
         playVideoWithAds("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
     }
 
     private fun playVideo(videoUrl: String) {
+        instrument = OAVTInstrument(hub = OAVTHubCore(), backend = AnyBackend())
+        trackerId = instrument.addTracker(MyTracker())
+        instrument.ready()
+
         player = SimpleExoPlayer.Builder(this).build()
 
         // Set player into tracker
@@ -114,7 +115,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun playVideoWithAds(videoUrl: String) {
-
+        instrument = OAVTInstrument(hub = OAVTHubCoreAds(), backend = AnyBackend())
+        trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
         adTrackerId = instrument.addTracker(OAVTTrackerIMA())
         instrument.ready()
 

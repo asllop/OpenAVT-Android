@@ -22,7 +22,7 @@ open class OAVTHubCore : OAVTHubInterface {
     private var streamId : String? = null
     private var playbackId : String? = null
     private var timestampOfLastEventOnPlayback : Long = 0
-    private var instrument: OAVTInstrument? = null
+    protected var instrument: OAVTInstrument? = null
 
     override fun processEvent(event: OAVTEvent, tracker: OAVTTrackerInterface): OAVTEvent? {
         if (tracker.state.didFinish) {
