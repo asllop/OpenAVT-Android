@@ -15,6 +15,7 @@ import com.openavt.core.OAVTInstrument
 import com.openavt.core.hubs.OAVTHubCore
 import com.openavt.core.hubs.OAVTHubCoreAds
 import com.openavt.core.interfaces.OAVTBackendInterface
+import com.openavt.core.metrics.OAVTMetricalcCore
 import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTMetric
 import com.openavt.core.utils.OAVTLog
@@ -38,26 +39,6 @@ class AnyBackend : OAVTBackendInterface {
         OAVTLog.verbose(  "AnyBackend endOfService")
     }
 }
-/*
-class AnyMetricalc : OAVTMetricalcInterface {
-    override fun processMetric(event: OAVTEvent, tracker: OAVTTrackerInterface): Array<OAVTMetric> {
-        OAVTLog.verbose(  "AnyMetricalc processMetric")
-        return arrayOf(
-                OAVTMetric("metricX", OAVTMetric.MetricType.Counter, 10),
-                OAVTMetric("metricY", OAVTMetric.MetricType.Gauge, 9.9999),
-                OAVTMetric.START_TIME(100)
-        )
-    }
-
-    override fun instrumentReady(instrument: OAVTInstrument) {
-        OAVTLog.verbose(  "AnyMetricalc instrumentReady")
-    }
-
-    override fun endOfService() {
-        OAVTLog.verbose(  "AnyMetricalc endOfService")
-    }
-}
- */
 
 class MyTracker : OAVTTrackerExoPlayer() {
     private var source : String? = null
@@ -115,7 +96,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun playVideoWithAds(videoUrl: String) {
-        instrument = OAVTInstrument(hub = OAVTHubCoreAds(), backend = AnyBackend())
+        instrument = OAVTInstrument(hub = OAVTHubCoreAds(), metricalc = OAVTMetricalcCore(), backend = AnyBackend())
         trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
         adTrackerId = instrument.addTracker(OAVTTrackerIMA())
         instrument.ready()
