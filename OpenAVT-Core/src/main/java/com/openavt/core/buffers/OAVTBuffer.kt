@@ -25,12 +25,12 @@ open class OAVTBuffer(size: Int) {
      */
     open fun put(sample: OAVTSample): Boolean {
         synchronized(this) {
-            if (remaining() > 0) {
+            return if (remaining() > 0) {
                 buffer.add(sample)
-                return true
+                true
             }
             else {
-                return false
+                false
             }
         }
     }
@@ -44,12 +44,12 @@ open class OAVTBuffer(size: Int) {
      */
     open fun set(at: Int, sample: OAVTSample): Boolean {
         synchronized(this) {
-            if (at < buffer.size) {
+            return if (at < buffer.size) {
                 buffer[at] = sample
-                return true
+                true
             }
             else {
-                return false
+                false
             }
         }
     }
@@ -62,11 +62,11 @@ open class OAVTBuffer(size: Int) {
      */
     open fun get(at: Int): OAVTSample? {
         synchronized(this) {
-            if (at < buffer.size) {
-                return buffer[at]
+            return if (at < buffer.size) {
+                buffer[at]
             }
             else {
-                return null
+                null
             }
         }
     }
@@ -104,9 +104,11 @@ open class OAVTBuffer(size: Int) {
         synchronized(this) {
             var tmp = retrieve()
             val timestampComparator = Comparator { sample1: OAVTSample, sample2: OAVTSample ->
-                if (sample1.timestamp > sample2.timestamp) { 1 }
-                else if (sample1.timestamp < sample2.timestamp) { -1 }
-                else { 0 }
+                when {
+                    sample1.timestamp > sample2.timestamp -> { 1 }
+                    sample1.timestamp < sample2.timestamp -> { -1 }
+                    else -> { 0 }
+                }
             }
             return tmp.sortedWith(timestampComparator).toTypedArray()
         }
