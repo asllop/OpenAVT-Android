@@ -3,19 +3,19 @@ package com.openavt.core.buffers
 import com.openavt.core.models.OAVTSample
 
 /**
- * Sample buffer.
+ * Buffer for samples. Thread safe.
  *
  * @param size Buffer size.
  */
-class OAVTBuffer(size: Int) {
+open class OAVTBuffer(size: Int) {
     /**
      * Samples buffer
      */
-    var buffer : MutableList<OAVTSample> = mutableListOf()
+    protected var buffer : MutableList<OAVTSample> = mutableListOf()
     /**
      * Buffer size
      */
-    var size = size
+    protected var size = size
 
     /**
      * Put sample.
