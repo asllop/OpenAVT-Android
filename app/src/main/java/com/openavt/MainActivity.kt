@@ -13,6 +13,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.openavt.core.OAVTInstrument
 import com.openavt.core.buffers.OAVTBuffer
+import com.openavt.core.buffers.OAVTReservoirBuffer
 import com.openavt.core.hubs.OAVTHubCore
 import com.openavt.core.hubs.OAVTHubCoreAds
 import com.openavt.core.interfaces.OAVTBackendInterface
@@ -25,17 +26,27 @@ import com.openavt.exoplayer.trackers.OAVTTrackerExoPlayer
 import com.openavt.ima.trackers.OAVTTrackerIMA
 
 class AnyBackend : OAVTBackendInterface {
-    val buffer = OAVTBuffer(500)
+    private val buffer = OAVTReservoirBuffer(5)
 
     override fun sendEvent(event: OAVTEvent) {
         OAVTLog.verbose(  "AnyBackend sendEvent = " + event)
-        buffer.put(event)
+        if (buffer.put(event)) {
+            OAVTLog.verbose(  "Sample inserted into buffer")
+        }
+        else {
+            OAVTLog.verbose(  "Sample NOT inserted into buffer")
+        }
         OAVTLog.verbose(  "AnyBackend buffer remaining = " + buffer.remaining())
     }
 
     override fun sendMetric(metric: OAVTMetric) {
         OAVTLog.verbose(  "AnyBackend sendMetric = " + metric)
-        buffer.put(metric)
+        if (buffer.put(metric)) {
+            OAVTLog.verbose(  "Sample inserted into buffer")
+        }
+        else {
+            OAVTLog.verbose(  "Sample NOT inserted into buffer")
+        }
         OAVTLog.verbose(  "AnyBackend buffer remaining = " + buffer.remaining())
     }
 
