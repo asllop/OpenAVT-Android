@@ -3,6 +3,9 @@ package com.openavt.core.interfaces
 import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTState
 
+/**
+ * OpenAVT base interface for instrument tracker components.
+ */
 interface OAVTTrackerInterface : OAVTComponentInterface {
     /**
      * Init an event.

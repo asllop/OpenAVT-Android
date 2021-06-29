@@ -3,6 +3,9 @@ package com.openavt.core.interfaces
 import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTMetric
 
+/**
+ * OpenAVT base interface for instrument metricalc components.
+ */
 interface OAVTMetricalcInterface: OAVTComponentInterface {
     /**
      * Process metrics.

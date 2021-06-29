@@ -8,6 +8,9 @@ import com.openavt.core.models.OAVTAttribute
 import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTMetric
 
+/**
+ * Metricalc core.
+ */
 class OAVTMetricalcCore: OAVTMetricalcInterface {
     override fun processMetric(event: OAVTEvent, tracker: OAVTTrackerInterface): Array<OAVTMetric> {
         var metricArray : MutableList<OAVTMetric> = mutableListOf()
