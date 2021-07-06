@@ -113,6 +113,7 @@ class OAVTInstrument() {
             val tracker = this.trackers[trackerId]
             tracker!!.endOfService()
             this.trackers.remove(trackerId)
+            this.trackerGetters.remove(trackerId)
             return true
         }
         else {
@@ -184,8 +185,9 @@ class OAVTInstrument() {
      * It calls the `endOfService` method of all chain components (trackers, hub, metricalc and backend).
      */
     fun shutdown() {
-        for ((_, tracker) in this.trackers) {
+        for ((trackerId, tracker) in this.trackers) {
             tracker.endOfService()
+            this.trackerGetters.remove(trackerId)
         }
         this.hub?.let { it.endOfService() }
         this.metricalc?.let { it.endOfService() }
@@ -284,6 +286,20 @@ class OAVTInstrument() {
     }
 
     /**
+     * Unegister an attribute getter for a tracker.
+     *
+     * @param attribute An OAVTAttribute.
+     * @param tracker Tracker.
+     */
+    fun unregisterGetter(attribute: OAVTAttribute, tracker: OAVTTrackerInterface) {
+        tracker.trackerId?.let {
+            if (this.trackerGetters[it] != null) {
+                this.trackerGetters[it]!!.remove(attribute)
+            }
+        }
+    }
+
+    /**
      * Call an attribute getter.
      *
      * @param attribute An OAVTAttribute.
@@ -312,29 +328,6 @@ class OAVTInstrument() {
     fun useGetter(attribute: OAVTAttribute, event: OAVTEvent, tracker: OAVTTrackerInterface) {
         callGetter(attribute, tracker)?.let {
             event.attributes[attribute] = it
-        }
-    }
-
-    private fun generateCustomAttributeId(action: OAVTAction? = null, trackerId: Int? = null): String {
-        if (action == null && trackerId == null) {
-            // For all
-            return "5fb1f955b45e38e31789286a1790398d"  // MD5 of string "ALL"
-        }
-        else if (action == null && trackerId != null) {
-            // For specific tracker
-            return trackerId.toString()
-        }
-        else if (trackerId == null && action != null) {
-            // For specific action
-            return action.actionName
-        }
-        else if (trackerId != null && action != null) {
-            // For specific action and tracker
-            return action.actionName + "-" + trackerId.toString()
-        }
-        else {
-            // This case is not possible, but without it Android Studio complains
-            return ""
         }
     }
 
