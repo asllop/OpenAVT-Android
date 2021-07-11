@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/OpenAVT-Core" />
             <option value="$PROJECT_DIR$/OpenAVT-ExoPlayer" />
             <option value="$PROJECT_DIR$/OpenAVT-IMA" />
+            <option value="$PROJECT_DIR$/OpenAVT-InfluxDB" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

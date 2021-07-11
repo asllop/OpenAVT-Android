@@ -12,6 +12,9 @@ import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTState
 import com.openavt.core.utils.OAVTLog
 
+/**
+ * OpenAVT tracker for Google IMA Ads.
+ */
 open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener, AdEvent.AdEventListener {
     override var state: OAVTState = OAVTState()
     override var trackerId: Int? = null

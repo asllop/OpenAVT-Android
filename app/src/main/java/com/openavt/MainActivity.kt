@@ -24,6 +24,8 @@ import com.openavt.core.models.OAVTSample
 import com.openavt.core.utils.OAVTLog
 import com.openavt.exoplayer.trackers.OAVTTrackerExoPlayer
 import com.openavt.ima.trackers.OAVTTrackerIMA
+import com.openavt.influxdb.backends.OAVTBackendInfluxdb
+import java.net.URL
 
 class AnyBackend : OAVTBackendInterface {
     private val buffer = OAVTReservoirBuffer(5)
@@ -115,7 +117,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun playVideoWithAds(videoUrl: String) {
-        instrument = OAVTInstrument(hub = OAVTHubCoreAds(), metricalc = OAVTMetricalcCore(), backend = AnyBackend())
+        instrument = OAVTInstrument(hub = OAVTHubCoreAds(), metricalc = OAVTMetricalcCore(), backend = OAVTBackendInfluxdb(time = 5, url = URL("http://192.168.99.100:8086/write?db=test")))
         trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
         adTrackerId = instrument.addTracker(OAVTTrackerIMA())
         instrument.ready()
