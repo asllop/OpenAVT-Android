@@ -33,6 +33,7 @@ open class OAVTBackendInfluxdb(buffer: OAVTBuffer = OAVTReservoirBuffer(500), ti
         }
     }
 
+    //TODO: check why some metrics not arriving (StartTime, NumPlays, NumRequests, PlayTime)
     override fun sendMetric(metric: OAVTMetric) {
         if (buffer.put(metric)) {
             OAVTLog.verbose("---> OAVTBackendInfluxdb SEND METRIC = $metric")
@@ -47,7 +48,7 @@ open class OAVTBackendInfluxdb(buffer: OAVTBuffer = OAVTReservoirBuffer(500), ti
         pushMetrics()
     }
 
-    fun buildLineMetrics(samples: Array<OAVTSample>): String {
+    private fun buildLineMetrics(samples: Array<OAVTSample>): String {
         var metrics = ""
         for (sample in samples) {
             if (sample is OAVTMetric) {
@@ -60,16 +61,22 @@ open class OAVTBackendInfluxdb(buffer: OAVTBuffer = OAVTReservoirBuffer(500), ti
         return metrics
     }
 
-    fun putBackMetrics(samples: Array<OAVTSample>) {
-        for (sample in samples) {
-            buffer.put(sample)
-        }
-    }
-
+    /**
+     * Build a metric.
+     *
+     * @param metric An OAVTMetric instance.
+     * @return InfluxDB metric.
+     */
     open fun buildMetric(metric: OAVTMetric): String {
         return getInfluxDBPath(metric) + " " + metric.name + "=" + metric.value.toString() + " " + (metric.timestamp * 1000000L).toString()
     }
 
+    /**
+     * Build an event metric.
+     *
+     * @param event An OAVTEvent instance.
+     * @return InfluxDB metric.
+     */
     open fun buildEventMetric(event: OAVTEvent): String {
         // Header
         var line = getInfluxDBPath(event) + " action=\"" + event.action.actionName + "\","
@@ -89,6 +96,14 @@ open class OAVTBackendInfluxdb(buffer: OAVTBuffer = OAVTReservoirBuffer(500), ti
         return line
     }
 
+    /**
+     * Generates the InfluxDB metric path.
+     *
+     * Overwrite this method in a subclass to provide a custom metric path.
+     *
+     * @param sample An OAVTSample instance.
+     * @return Metric path.
+     */
     open fun getInfluxDBPath(sample: OAVTSample): String {
         return when (sample) {
             is OAVTMetric -> {
@@ -103,7 +118,13 @@ open class OAVTBackendInfluxdb(buffer: OAVTBuffer = OAVTReservoirBuffer(500), ti
         }
     }
 
-    fun setupTimer(interval: Long) {
+    private fun putBackMetrics(samples: Array<OAVTSample>) {
+        for (sample in samples) {
+            buffer.put(sample)
+        }
+    }
+
+    private fun setupTimer(interval: Long) {
         stopTimer()
         this.timer = Timer()
         this.timer!!.scheduleAtFixedRate(object: TimerTask() {
@@ -116,31 +137,33 @@ open class OAVTBackendInfluxdb(buffer: OAVTBuffer = OAVTReservoirBuffer(500), ti
         }, interval * 1000, interval * 1000)
     }
 
-    fun stopTimer() {
+    private fun stopTimer() {
         this.timer?.let {
             it.cancel()
         }
         this.timer = null
     }
 
+    /**
+     * Push metrics to InfluxDB server.
+     */
     open fun pushMetrics() {
-        OAVTLog.verbose("Push Metrics! buffer remaining = " + buffer.remaining())
+        synchronized(this) {
+            OAVTLog.verbose("Push Metrics! buffer remaining = " + buffer.remaining())
 
-        val samples = buffer.retrieveInOrder()
-        val postString = buildLineMetrics(samples)
+            val samples = buffer.retrieveInOrder()
+            if (samples.isEmpty()) return
+            val postString = buildLineMetrics(samples)
 
-        //TODO: if postString is empty, do not make request
+            url.toString().httpPost().body(postString).response { request, response, result ->
+                OAVTLog.verbose("HTTP Result " + result)
 
-        OAVTLog.verbose("---> OAVTBackendInfluxdb PUSH METRICS:")
-        OAVTLog.verbose(postString)
-
-        url.toString().httpPost().body(postString).response { request, response, result ->
-            OAVTLog.verbose("HTTP RESPONSE:")
-            OAVTLog.verbose("   Request " + request)
-            OAVTLog.verbose("   Response " + response)
-            OAVTLog.verbose("   Result " + result)
-
-            //TODO: in case of error, put back metrics
+                val (_, err) = result
+                if (err != null) {
+                    OAVTLog.verbose("HTTP Request error, push back metrics")
+                    putBackMetrics(samples)
+                }
+            }
         }
     }
 }
