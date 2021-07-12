@@ -56,7 +56,7 @@ dependencies {
 }
 ```
 
-#### 2.2 Google IMA Tracker
+#### 2.3 Google IMA Tracker
 
 ```
 dependencies {
@@ -68,7 +68,7 @@ dependencies {
 }
 ```
 
-#### 2.2 InfluxDB Backend
+#### 2.4 InfluxDB Backend
 
 ```
 dependencies {
