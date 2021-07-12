@@ -18,7 +18,7 @@ The Open Audio-Video Telemetry is a set of tools for performance monitoring in m
 <a name="install"></a>
 ## 2. Installation
 
-To install OpenAVT-Android using JitPack, add the followinf lines to your root build.gradle first:
+To install OpenAVT-Android using JitPack, add the following lines to your root build.gradle:
 
 ```
 allprojects {
@@ -191,7 +191,7 @@ Checkout the `app` folder for usage examples.
 
 **Check out the [Documentation Repository](https://github.com/asllop/OpenAVT-Docs) for general and platform-independent documentation.**
 
-All classes and methods are documented with annotations. To generate the docs in HTML you can use [Dokka](https://github.com/Kotlin/dokka). Just open the project in Android Studio, open Gradle menu, and go to `OpenAVT-Android > Tasks > documentation > dokka`.
+All classes and methods are documented with annotations. To generate the docs you can use [Dokka](https://github.com/Kotlin/dokka). Just open the project in Android Studio, go to the Gradle menu, and double-click on `OpenAVT-Android > Tasks > documentation > dokka`.
 
 <a name="auth"></a>
 ## 6. Author
