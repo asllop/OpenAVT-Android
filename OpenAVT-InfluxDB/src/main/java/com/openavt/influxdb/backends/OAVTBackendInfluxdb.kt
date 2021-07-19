@@ -160,7 +160,7 @@ open class OAVTBackendInfluxdb(buffer: OAVTBuffer = OAVTReservoirBuffer(500), ti
 
                 val (_, err) = result
                 if (err != null) {
-                    OAVTLog.verbose("HTTP Request error, push back metrics")
+                    OAVTLog.error("HTTP Request error, push back metrics")
                     putBackMetrics(samples)
                 }
             }

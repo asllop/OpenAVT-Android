@@ -1,3 +1,4 @@
+include ':OpenAVT-Graphite'
 include ':OpenAVT-InfluxDB'
 include ':OpenAVT-IMA'
 include ':OpenAVT-ExoPlayer'
