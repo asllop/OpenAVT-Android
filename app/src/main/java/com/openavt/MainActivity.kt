@@ -120,8 +120,8 @@ class MainActivity : AppCompatActivity() {
     private fun playVideoWithAds(videoUrl: String) {
         val hub = OAVTHubCoreAds()
         val metricalc = OAVTMetricalcCore()
-        val backend = OAVTBackendInfluxdb(time = 5, url = URL("http://192.168.99.100:8086/write?db=test"))
-        //val backend = OAVTBackendGraphite(host = "")
+        //val backend = OAVTBackendInfluxdb(time = 5, url = URL("http://192.168.99.100:8086/write?db=test"))
+        val backend = OAVTBackendGraphite(time = 5, host = "192.168.99.100")
         instrument = OAVTInstrument(hub = hub, metricalc = metricalc, backend = backend)
         trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
         adTrackerId = instrument.addTracker(OAVTTrackerIMA())
