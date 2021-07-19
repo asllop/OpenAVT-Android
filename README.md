@@ -77,6 +77,15 @@ dependencies {
 }
 ```
 
+#### 2.5 Graphite Backend
+
+```
+dependencies {
+    ...
+    implementation 'com.github.asllop.OpenAVT-Android:OpenAVT-Graphite:master-SNAPSHOT'
+}
+```
+
 <a name="usage"></a>
 ## 3. Usage
 
@@ -93,6 +102,14 @@ val backend = OAVTBackendInfluxdb(url = URL("http://192.168.99.100:8086/write?db
 ```
 
 `url` is the URL of the InfluxDB server used to write data to a particular database (in this case named `test`).
+
+#### 3.1.1 Init the Graphite Backend
+
+```kotlin
+val backend = OAVTBackendGraphite(host = "192.168.99.100"))
+```
+
+`host` is the address of the Graphite server.
 
 ### 3.2 Choosing a Hub
 
