@@ -1,4 +1,4 @@
-package com.openavt.ima.trackers
+package com.openavt.ima
 
 import org.junit.Test
 
