@@ -37,6 +37,10 @@ android {
         outputFormat = 'gfm'
         outputDirectory = "$buildDir/javadoc"
     }
+
+    packagingOptions {
+        exclude "META-INF/annotation-experimental_release.kotlin_module"
+    }
 }
 
 dependencies {
@@ -50,6 +54,7 @@ dependencies {
     implementation project(':OpenAVT-ExoPlayer')
     implementation project(':OpenAVT-IMA')
     implementation project(':OpenAVT-InfluxDB')
+    implementation project(':OpenAVT-Graphite')
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
