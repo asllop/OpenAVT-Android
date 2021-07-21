@@ -62,6 +62,17 @@ class AnyBackend : OAVTBackendInterface {
     }
 }
 
+class MyGraphiteBackend(
+    buffer: OAVTBuffer = OAVTReservoirBuffer(500),
+    time: Long = 30,
+    host: String,
+    port: Int = 2003
+) : OAVTBackendGraphite(buffer, time, host, port) {
+    override fun sendEvent(event: OAVTEvent) {
+        OAVTLog.verbose(  "MyGraphiteBackend sendEvent = " + event)
+    }
+}
+
 class MyTracker : OAVTTrackerExoPlayer() {
     private var source : String? = null
 
@@ -121,7 +132,7 @@ class MainActivity : AppCompatActivity() {
         val hub = OAVTHubCoreAds()
         val metricalc = OAVTMetricalcCore()
         //val backend = OAVTBackendInfluxdb(time = 5, url = URL("http://192.168.99.100:8086/write?db=test"))
-        val backend = OAVTBackendGraphite(time = 5, host = "192.168.99.100")
+        val backend = MyGraphiteBackend(time = 5, host = "192.168.99.100")
         instrument = OAVTInstrument(hub = hub, metricalc = metricalc, backend = backend)
         trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
         adTrackerId = instrument.addTracker(OAVTTrackerIMA())

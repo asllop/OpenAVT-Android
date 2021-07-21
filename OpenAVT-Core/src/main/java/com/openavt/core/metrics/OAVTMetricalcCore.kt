@@ -16,14 +16,14 @@ open class OAVTMetricalcCore: OAVTMetricalcInterface {
         var metricArray : MutableList<OAVTMetric> = mutableListOf()
 
         if (event.action == OAVTAction.Start) {
-            val timeSinceMediaRequest = event.attributes[OAVTAction.MediaRequest.timeAttribute] as? Int
-            val timeSinceStreamLoad = event.attributes[OAVTAction.StreamLoad.timeAttribute] as? Int
+            val timeSinceMediaRequest = event.attributes[OAVTAction.MediaRequest.timeAttribute] as? Number
+            val timeSinceStreamLoad = event.attributes[OAVTAction.StreamLoad.timeAttribute] as? Number
 
             if (timeSinceMediaRequest != null) {
-                metricArray.add(OAVTMetric.StartTime(timeSinceMediaRequest))
+                metricArray.add(OAVTMetric.StartTime(timeSinceMediaRequest.toInt()))
             }
             else if (timeSinceStreamLoad != null) {
-                metricArray.add(OAVTMetric.StartTime(timeSinceStreamLoad))
+                metricArray.add(OAVTMetric.StartTime(timeSinceStreamLoad.toInt()))
             }
             metricArray.add(OAVTMetric.NumPlays(1))
         }
@@ -32,8 +32,8 @@ open class OAVTMetricalcCore: OAVTMetricalcInterface {
                 (event.attributes[OAVTAttribute.inPauseBlock] as? Boolean)?.let { inPauseBlock ->
                     (event.attributes[OAVTAttribute.inSeekBlock] as? Boolean)?.let { inSeekBlock ->
                         if (inPlaybackBlock && !inPauseBlock && !inSeekBlock) {
-                            (event.attributes[OAVTAction.BufferBegin.timeAttribute] as? Int)?.let { timeSinceBufferBegin ->
-                                metricArray.add(OAVTMetric.RebufferTime(timeSinceBufferBegin))
+                            (event.attributes[OAVTAction.BufferBegin.timeAttribute] as? Number)?.let { timeSinceBufferBegin ->
+                                metricArray.add(OAVTMetric.RebufferTime(timeSinceBufferBegin.toInt()))
                                 metricArray.add(OAVTMetric.NumRebuffers(1))
                             }
                         }
@@ -51,8 +51,8 @@ open class OAVTMetricalcCore: OAVTMetricalcInterface {
             metricArray.add(OAVTMetric.NumEnds(1))
         }
 
-        (event.attributes[OAVTAttribute.deltaPlayTime] as? Int)?.let { deltaPlayTime ->
-            metricArray.add(OAVTMetric.PlayTime(deltaPlayTime))
+        (event.attributes[OAVTAttribute.deltaPlayTime] as? Number)?.let { deltaPlayTime ->
+            metricArray.add(OAVTMetric.PlayTime(deltaPlayTime.toInt()))
         }
 
         return metricArray.toTypedArray()

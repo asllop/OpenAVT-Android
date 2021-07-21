@@ -33,7 +33,6 @@ open class OAVTBackendInfluxdb(buffer: OAVTBuffer = OAVTReservoirBuffer(500), ti
         }
     }
 
-    //TODO: check why some metrics not arriving (StartTime, NumPlays, NumRequests, PlayTime)
     override fun sendMetric(metric: OAVTMetric) {
         if (buffer.put(metric)) {
             OAVTLog.verbose("---> OAVTBackendInfluxdb SEND METRIC = $metric")

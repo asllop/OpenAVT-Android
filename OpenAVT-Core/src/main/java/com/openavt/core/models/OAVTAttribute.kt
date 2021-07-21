@@ -21,7 +21,7 @@ class OAVTAttribute(name: String) {
      * @return True if are equal, false otherwise.
      */
     override fun equals(other: Any?): Boolean {
-        return attributeName == (other as OAVTAttribute).attributeName
+        return attributeName.equals((other as OAVTAttribute).attributeName)
     }
 
     /**
