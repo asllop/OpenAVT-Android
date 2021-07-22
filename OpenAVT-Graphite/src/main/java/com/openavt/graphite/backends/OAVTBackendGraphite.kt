@@ -14,6 +14,14 @@ import java.io.PrintWriter
 import java.net.Socket
 import java.util.*
 
+/**
+ * OpenAVT backend for Graphite.
+ *
+ * @param buffer An OAVTBuffer instance. Default OAVTReservoirBuffer with size 500.
+ * @param time Push metrics time in seconds. Default 30.
+ * @param host Graphite server address.
+ * @param port Graphite server TCP port. Default 2003.
+ */
 open class OAVTBackendGraphite(buffer: OAVTBuffer = OAVTReservoirBuffer(500), time: Long = 30, host: String, port: Int = 2003): OAVTBackendInterface {
     private val buffer = buffer
     private val time = time

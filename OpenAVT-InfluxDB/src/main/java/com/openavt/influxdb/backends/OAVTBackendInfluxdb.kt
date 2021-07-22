@@ -16,6 +16,10 @@ import java.util.*
 
 /**
  * OpenAVT backend for InfluxDB.
+ *
+ * @param buffer An OAVTBuffer instance. Default OAVTReservoirBuffer with size 500.
+ * @param time Push metrics time in seconds. Default 30.
+ * @param url InfluxDB URL.
  */
 open class OAVTBackendInfluxdb(buffer: OAVTBuffer = OAVTReservoirBuffer(500), time: Long = 30, url: URL): OAVTBackendInterface  {
     private val buffer = buffer
