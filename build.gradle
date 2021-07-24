@@ -5,6 +5,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "com.android.tools.build:gradle:4.1.1"
@@ -14,6 +15,8 @@ buildscript {
         // in the individual module build.gradle files
 
         classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:$dokkaVersion"
+
+        classpath "com.newrelic.agent.android:agent-gradle-plugin:6.+"
     }
 }
 

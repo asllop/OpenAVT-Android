@@ -4,6 +4,8 @@ plugins {
     id 'org.jetbrains.dokka-android'
 }
 
+apply plugin: 'newrelic'
+
 android {
     compileSdkVersion 30
 
@@ -55,10 +57,12 @@ dependencies {
     implementation project(':OpenAVT-IMA')
     implementation project(':OpenAVT-InfluxDB')
     implementation project(':OpenAVT-Graphite')
+    implementation project(':OpenAVT-NewRelic')
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.google.android.exoplayer:exoplayer:+'
     implementation 'com.google.android.exoplayer:extension-ima:+'
+    implementation 'com.newrelic.agent.android:android-agent:6.+'
 }
