@@ -11,6 +11,8 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import com.newrelic.agent.android.NewRelic
+import com.newrelic.agent.android.logging.AgentLog
 import com.openavt.core.OAVTInstrument
 import com.openavt.core.buffers.OAVTBuffer
 import com.openavt.core.buffers.OAVTReservoirBuffer
@@ -26,6 +28,7 @@ import com.openavt.exoplayer.trackers.OAVTTrackerExoPlayer
 import com.openavt.graphite.backends.OAVTBackendGraphite
 import com.openavt.ima.trackers.OAVTTrackerIMA
 import com.openavt.influxdb.backends.OAVTBackendInfluxdb
+import com.openavt.newrelic.backends.OAVTBackendNewrelic
 import java.net.URL
 
 class AnyBackend : OAVTBackendInterface {
@@ -97,6 +100,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //NewRelic.withApplicationToken("APP TOKEN").withLogLevel(AgentLog.AUDIT).start(this.getApplication());
+
         OAVTLog.setLogLevel(OAVTLog.LogLevel.Verbose)
 
         OAVTLog.verbose("----------- START HERE -----------")
@@ -132,7 +137,8 @@ class MainActivity : AppCompatActivity() {
         val hub = OAVTHubCoreAds()
         val metricalc = OAVTMetricalcCore()
         //val backend = OAVTBackendInfluxdb(time = 5, url = URL("http://192.168.99.100:8086/write?db=test"))
-        val backend = MyGraphiteBackend(time = 5, host = "192.168.99.100")
+        //val backend = MyGraphiteBackend(time = 5, host = "192.168.99.100")
+        val backend = OAVTBackendNewrelic()
         instrument = OAVTInstrument(hub = hub, metricalc = metricalc, backend = backend)
         trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
         adTrackerId = instrument.addTracker(OAVTTrackerIMA())
