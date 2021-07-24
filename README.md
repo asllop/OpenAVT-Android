@@ -86,6 +86,15 @@ dependencies {
 }
 ```
 
+#### 2.6 New Relic Backend
+
+```
+dependencies {
+    ...
+    implementation 'com.github.asllop.OpenAVT-Android:OpenAVT-NewRelic:master-SNAPSHOT'
+}
+```
+
 <a name="usage"></a>
 ## 3. Usage
 
@@ -103,13 +112,21 @@ val backend = OAVTBackendInfluxdb(url = URL("http://192.168.99.100:8086/write?db
 
 `url` is the URL of the InfluxDB server used to write data to a particular database (in this case named `test`).
 
-#### 3.1.1 Init the Graphite Backend
+#### 3.1.2 Init the Graphite Backend
 
 ```kotlin
-val backend = OAVTBackendGraphite(host = "192.168.99.100"))
+val backend = OAVTBackendGraphite(host = "192.168.99.100")
 ```
 
 `host` is the address of the Graphite server.
+
+#### 3.1.3 Init the New Relic Backend
+
+```kotlin
+val backend = OAVTBackendNewrelic()
+```
+
+The New Relic Mobile Agent must be installed and set up to use this backend.
 
 ### 3.2 Choosing a Hub
 
