@@ -317,7 +317,7 @@ A tracker can also register attribute getters. An attribute getter binds a track
 Now we need to bind this method to the attribute:
 
 ```Kotlin
-    func instrumentReady(instrument: OAVTInstrument) {
+    fun instrumentReady(instrument: OAVTInstrument) {
         ...
         
         this.instrument?.registerGetter(OAVTAttribute.position, ::getPosition, this)
