@@ -26,7 +26,7 @@ class OAVTInstrument() {
     private var nextTrackerId: Int = 0
     private val timeSince: MutableMap<OAVTAttribute, Long> = mutableMapOf()
     private var pingTrackerTimers: MutableMap<Int, Timer> = mutableMapOf()
-    private val trackerGetters : MutableMap<Int, MutableMap<OAVTAttribute, () -> Any?>> = mutableMapOf()
+    private val trackerGetters : MutableMap<Int, MutableMap<OAVTAttribute, Pair<() -> Any?, (OAVTEvent, OAVTAttribute) -> Boolean>>> = mutableMapOf()
 
     /**
      * Init a new OAVTInstrument.
@@ -275,13 +275,14 @@ class OAVTInstrument() {
      * @param attribute An OAVTAttribute.
      * @param getter Code block. It must return the attribute value.
      * @param tracker Tracker.
+     * @param filter Code block. If it returns true the attribute will be automatically added to the event. If false, it will be ignored.
      */
-    fun registerGetter(attribute: OAVTAttribute, getter: () -> Any?, tracker: OAVTTrackerInterface) {
+    fun registerGetter(attribute: OAVTAttribute, getter: () -> Any?, tracker: OAVTTrackerInterface, filter: (OAVTEvent, OAVTAttribute) -> Boolean = { _,_ -> true }) {
         tracker.trackerId?.let {
             if (trackerGetters[it] == null) {
                 trackerGetters[it] = mutableMapOf()
             }
-            trackerGetters[it]!![attribute] = getter
+            trackerGetters[it]!![attribute] = Pair(getter, filter)
         }
     }
 
@@ -311,7 +312,7 @@ class OAVTInstrument() {
         tracker.trackerId?.let {
             trackerGetters[it]?.let {
                 it[attribute]?.let {
-                    return it()
+                    return it.first()
                 }
             }
         }
@@ -326,8 +327,16 @@ class OAVTInstrument() {
      * @param tracker Tracker.
      */
     fun useGetter(attribute: OAVTAttribute, event: OAVTEvent, tracker: OAVTTrackerInterface) {
-        callGetter(attribute, tracker)?.let {
-            event.attributes[attribute] = it
+        tracker.trackerId?.let {
+            trackerGetters[it]?.let {
+                it[attribute]?.let {
+                    if (it.second(event, attribute)) {
+                        it.first()?.let {
+                            event.attributes[attribute] = it
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -337,6 +346,7 @@ class OAVTInstrument() {
         // Generate attributes
         generateSenderId(tracker, event)
         generateTimeSince(event)
+        generateAttributesFromGetters(tracker, event)
 
         return event
     }
@@ -349,6 +359,16 @@ class OAVTInstrument() {
         for ((attr, ts) in timeSince) {
             val delta = System.currentTimeMillis() - ts
             event.attributes[attr] = delta
+        }
+    }
+
+    private fun generateAttributesFromGetters(tracker: OAVTTrackerInterface, event: OAVTEvent) {
+        tracker.trackerId?.let {
+            trackerGetters[it]?.let {
+                for ((attr, _) in it) {
+                    useGetter(attr, event, tracker)
+                }
+            }
         }
     }
 }

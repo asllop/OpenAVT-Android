@@ -107,8 +107,8 @@ class MainActivity : AppCompatActivity() {
         OAVTLog.verbose("----------- START HERE -----------")
 
         //playVideo("https://demos.transloadit.com/dashtest/my_playlist.mpd")
-        //playVideo("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
-        playVideoWithAds("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
+        playVideo("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
+        //playVideoWithAds("https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd")
     }
 
     private fun playVideo(videoUrl: String) {
@@ -138,7 +138,8 @@ class MainActivity : AppCompatActivity() {
         val metricalc = OAVTMetricalcCore()
         //val backend = OAVTBackendInfluxdb(time = 5, url = URL("http://192.168.99.100:8086/write?db=test"))
         //val backend = MyGraphiteBackend(time = 5, host = "192.168.99.100")
-        val backend = OAVTBackendNewrelic()
+        //val backend = OAVTBackendNewrelic()
+        val backend = AnyBackend()
         instrument = OAVTInstrument(hub = hub, metricalc = metricalc, backend = backend)
         trackerId = instrument.addTracker(OAVTTrackerExoPlayer())
         adTrackerId = instrument.addTracker(OAVTTrackerIMA())

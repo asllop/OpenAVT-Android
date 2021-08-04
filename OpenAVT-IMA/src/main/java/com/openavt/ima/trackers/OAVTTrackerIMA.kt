@@ -46,17 +46,6 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
             }
         }
 
-        // Set attributes from getters
-        this.instrument?.useGetter(OAVTAttribute.trackerTarget, event, this)
-        this.instrument?.useGetter(OAVTAttribute.adRoll, event, this)
-        this.instrument?.useGetter(OAVTAttribute.adDuration, event, this)
-        this.instrument?.useGetter(OAVTAttribute.adResolutionHeight, event, this)
-        this.instrument?.useGetter(OAVTAttribute.adResolutionWidth, event, this)
-        this.instrument?.useGetter(OAVTAttribute.adBitrate, event, this)
-        this.instrument?.useGetter(OAVTAttribute.adCreativeId, event, this)
-        this.instrument?.useGetter(OAVTAttribute.adTitle, event, this)
-        this.instrument?.useGetter(OAVTAttribute.isAdsTracker, event, this)
-
         return event
     }
 

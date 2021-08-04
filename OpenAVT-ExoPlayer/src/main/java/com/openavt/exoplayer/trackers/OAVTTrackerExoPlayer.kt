@@ -93,21 +93,6 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
             }
         }
 
-        // Set attributes from getters
-        instrument?.useGetter(OAVTAttribute.trackerTarget, event, this)
-        instrument?.useGetter(OAVTAttribute.position, event, this)
-        instrument?.useGetter(OAVTAttribute.duration, event, this)
-        instrument?.useGetter(OAVTAttribute.resolutionHeight, event, this)
-        instrument?.useGetter(OAVTAttribute.resolutionWidth, event, this)
-        instrument?.useGetter(OAVTAttribute.isMuted, event, this)
-        instrument?.useGetter(OAVTAttribute.volume, event, this)
-        instrument?.useGetter(OAVTAttribute.fps, event, this)
-        instrument?.useGetter(OAVTAttribute.source, event, this)
-        instrument?.useGetter(OAVTAttribute.bitrate, event, this)
-        instrument?.useGetter(OAVTAttribute.language, event, this)
-        instrument?.useGetter(OAVTAttribute.subtitles, event, this)
-        instrument?.useGetter(OAVTAttribute.isAdsTracker, event, this)
-
         return event
     }
 
