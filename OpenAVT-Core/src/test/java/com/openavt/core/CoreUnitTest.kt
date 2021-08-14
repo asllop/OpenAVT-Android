@@ -6,6 +6,7 @@ import com.openavt.core.hubs.OAVTHubCore
 import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.OAVTAction
 import com.openavt.core.models.OAVTState
+import com.openavt.core.utils.OAVTAssert.Companion.assertEquals
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -274,6 +275,73 @@ class CoreUnitTest {
         // Reset for next test
         tracker.state.reset()
     }
+
+    @Test
+    fun time_since_attributes() {
+        val tracker = instrument.getTracker(trackerId)!!
+        val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
+
+        instrument.emit(OAVTAction.MediaRequest, trackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.MediaRequest)
+
+        Thread.sleep(300)
+
+        instrument.emit(OAVTAction.PlayerSet, trackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.PlayerSet)
+
+        instrument.emit(OAVTAction.StreamLoad, trackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.StreamLoad)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.BufferBegin)
+
+        Thread.sleep(800)
+
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+        val bufferEvent1 = backend.getLastEvent()!!
+        assertEquals(bufferEvent1.action, OAVTAction.BufferFinish)
+        assertEquals(bufferEvent1.attributes[OAVTAction.BufferBegin.timeAttribute] as Long, 800, 50)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+        val startEvent1 = backend.getLastEvent()!!
+        assertEquals(startEvent1.action, OAVTAction.Start)
+        assertEquals(startEvent1.attributes[OAVTAction.MediaRequest.timeAttribute] as Long, 1100, 50)
+
+        instrument.emit(OAVTAction.PauseBegin, trackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.PauseBegin)
+
+        instrument.emit(OAVTAction.SeekBegin, trackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.SeekBegin)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.BufferBegin)
+
+        Thread.sleep(600)
+
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.BufferFinish)
+
+        instrument.emit(OAVTAction.SeekFinish, trackerId)
+        val seekEvent1 = backend.getLastEvent()!!
+        assertEquals(seekEvent1.action, OAVTAction.SeekFinish)
+        assertEquals(seekEvent1.attributes[OAVTAction.SeekBegin.timeAttribute] as Long, 600, 50)
+
+        instrument.emit(OAVTAction.PauseFinish, trackerId)
+        val pauseEvent1 = backend.getLastEvent()!!
+        assertEquals(pauseEvent1.action, OAVTAction.PauseFinish)
+        assertEquals(pauseEvent1.attributes[OAVTAction.PauseBegin.timeAttribute] as Long, 600, 50)
+
+        instrument.emit(OAVTAction.End, trackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.End)
+
+        // Reset for next test
+        tracker.state.reset()
+    }
+    
+    //TODO: test counters
+    //TODO: test accumulated times
+    //TODO: test in block attributes
+    //TODO: multiple consecutive playbacks
 
     private fun check_states(tracker: OAVTTrackerInterface, compareState: OAVTState) {
         assertEquals(tracker.state.didMediaRequest, compareState.didMediaRequest)
