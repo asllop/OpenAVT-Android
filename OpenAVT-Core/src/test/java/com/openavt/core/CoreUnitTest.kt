@@ -10,19 +10,9 @@ import org.junit.Test
 
 import org.junit.Assert.*
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 class CoreUnitTest {
-    private var instrument: OAVTInstrument
-    private var trackerId: Int
-
-    init {
-        instrument = OAVTInstrument(OAVTHubCore(), DummyBackend())
-        trackerId = instrument.addTracker(DummyTracker())
-    }
+    private var instrument: OAVTInstrument = OAVTInstrument(OAVTHubCore(), DummyBackend())
+    private var trackerId: Int = instrument.addTracker(DummyTracker())
 
     @Test
     fun trackedId_integrity() {
@@ -85,9 +75,62 @@ class CoreUnitTest {
         instrument.emit(OAVTAction.End, trackerId)
         compareState.didFinish = true
         check_states(tracker, compareState)
+
+        // Reset for next test
+        tracker.state.reset()
     }
 
-    fun check_states(tracker: OAVTTrackerInterface, compareState: OAVTState) {
+    @Test
+    fun event_workflow() {
+        val tracker = instrument.getTracker(trackerId)!!
+        val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
+
+        instrument.emit(OAVTAction.MediaRequest, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.MediaRequest)
+
+        instrument.emit(OAVTAction.PlayerSet, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.PlayerSet)
+
+        instrument.emit(OAVTAction.StreamLoad, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.StreamLoad)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.BufferBegin)
+
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.BufferFinish)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.Start)
+
+        instrument.emit(OAVTAction.PauseBegin, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.PauseBegin)
+
+        instrument.emit(OAVTAction.SeekBegin, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.SeekBegin)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.BufferBegin)
+
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.BufferFinish)
+
+        instrument.emit(OAVTAction.SeekFinish, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.SeekFinish)
+
+        instrument.emit(OAVTAction.PauseFinish, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.PauseFinish)
+
+        instrument.emit(OAVTAction.End, trackerId)
+        assertEquals(backend.latestEvent!!.action, OAVTAction.End)
+
+        // Reset for next test
+        tracker.state.reset()
+    }
+
+    //TODO: check states and event workflow sending repeated events and in wrong order
+
+    private fun check_states(tracker: OAVTTrackerInterface, compareState: OAVTState) {
         assertEquals(tracker.state.didMediaRequest, compareState.didMediaRequest)
         assertEquals(tracker.state.didPlayerSet, compareState.didPlayerSet)
         assertEquals(tracker.state.didStreamLoad, compareState.didStreamLoad)

@@ -5,7 +5,7 @@ import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTState
 
-class DummyTracker(): OAVTTrackerInterface {
+class DummyTracker: OAVTTrackerInterface {
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
         return event
     }
