@@ -3,7 +3,6 @@ package com.openavt.core
 import com.openavt.core.assets.DummyBackend
 import com.openavt.core.assets.DummyTracker
 import com.openavt.core.hubs.OAVTHubCore
-import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.OAVTAction
 import com.openavt.core.models.OAVTAttribute
 import com.openavt.core.models.OAVTState
@@ -91,7 +90,6 @@ class CoreUnitTest {
     @Test
     fun event_workflow() {
         val (instrument, trackerId) = createInstrument()
-        val tracker = instrument.getTracker(trackerId)!!
         val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
 
         instrument.emit(OAVTAction.MediaRequest, trackerId)
@@ -207,7 +205,6 @@ class CoreUnitTest {
     @Test
     fun event_workflow_mistakes() {
         val (instrument, trackerId) = createInstrument()
-        val tracker = instrument.getTracker(trackerId)!!
         val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
 
         instrument.emit(OAVTAction.Stop, trackerId) // Event at wrong position
@@ -271,7 +268,6 @@ class CoreUnitTest {
     @Test
     fun time_since_attributes() {
         val (instrument, trackerId) = createInstrument()
-        val tracker = instrument.getTracker(trackerId)!!
         val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
 
         instrument.emit(OAVTAction.MediaRequest, trackerId)
@@ -331,7 +327,6 @@ class CoreUnitTest {
     @Test
     fun counters() {
         val (instrument, trackerId) = createInstrument()
-        val tracker = instrument.getTracker(trackerId)!!
         val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
 
         instrument.emit(OAVTAction.StreamLoad, trackerId)
