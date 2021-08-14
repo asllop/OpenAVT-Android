@@ -344,6 +344,7 @@ class CoreUnitTest {
         assertEquals(errorEvent1.attributes[OAVTAttribute.countStarts] as Int, 1)
         assertEquals(errorEvent1.attributes[OAVTAttribute.countErrors] as Int, 1)
 
+        instrument.emit(OAVTAction.Start, trackerId)
         instrument.emit(OAVTAction.Ping, trackerId)
 
         instrument.emit(OAVTAction.Error, trackerId)
