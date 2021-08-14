@@ -126,6 +126,7 @@ open class OAVTTrackerIMA(): OAVTTrackerInterface, AdErrorEvent.AdErrorListener,
             AdEvent.AdEventType.RESUMED -> {
                 instrument!!.emit(OAVTAction.AdPauseFinish, this)
             }
+            else -> {}
         }
     }
 

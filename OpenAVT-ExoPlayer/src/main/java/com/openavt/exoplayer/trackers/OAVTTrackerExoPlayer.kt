@@ -1,9 +1,11 @@
 package com.openavt.exoplayer.trackers
 
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.analytics.AnalyticsListener
+import com.google.android.exoplayer2.video.VideoSize
 import com.openavt.core.OAVTInstrument
 import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.OAVTAction
@@ -15,7 +17,7 @@ import com.openavt.core.utils.OAVTLog
 /**
  * OpenAVT tracker for the ExoPlayer.
  */
-open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, AnalyticsListener {
+open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.Listener, AnalyticsListener {
     override var state: OAVTState = OAVTState()
     override var trackerId: Int? = null
 
@@ -23,7 +25,7 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
     private var player: SimpleExoPlayer? = null
     private var userRequested = false
     private var bitrateEstimate: Long? = null
-    private var lastError: ExoPlaybackException? = null
+    private var lastError: PlaybackException? = null
     private var lastResolutionHeight: Int = 0
     private var lastResolutionWidth: Int = 0
 
@@ -78,17 +80,8 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
     override fun initEvent(event: OAVTEvent): OAVTEvent? {
         if (event.action == OAVTAction.Error) {
             lastError?.let {
-                val type : String?
-                when (it.type) {
-                    ExoPlaybackException.TYPE_REMOTE -> type = "remote"
-                    ExoPlaybackException.TYPE_RENDERER -> type = "renderer"
-                    ExoPlaybackException.TYPE_SOURCE -> type = "source"
-                    ExoPlaybackException.TYPE_UNEXPECTED -> type = "unexpected"
-                    else -> type = null
-                }
-
                 event.attributes[OAVTAttribute.errorDescription] = it.message ?: ""
-                event.attributes[OAVTAttribute.errorType] = type ?: ""
+                event.attributes[OAVTAttribute.errorCode] = it.errorCode
                 lastError = null
             }
         }
@@ -320,29 +313,14 @@ open class OAVTTrackerExoPlayer() : OAVTTrackerInterface, Player.EventListener, 
         this.bitrateEstimate = bitrateEstimate;
     }
 
-    override fun onPlayerError(
-        eventTime: AnalyticsListener.EventTime,
-        error: ExoPlaybackException
-    ) {
+    override fun onPlayerError(eventTime: AnalyticsListener.EventTime, error: PlaybackException) {
         super<AnalyticsListener>.onPlayerError(eventTime, error)
         this.lastError = error;
         instrument?.emit(OAVTAction.Error, this)
     }
 
-    override fun onVideoSizeChanged(
-        eventTime: AnalyticsListener.EventTime,
-        width: Int,
-        height: Int,
-        unappliedRotationDegrees: Int,
-        pixelWidthHeightRatio: Float
-    ) {
-        super.onVideoSizeChanged(
-            eventTime,
-            width,
-            height,
-            unappliedRotationDegrees,
-            pixelWidthHeightRatio
-        )
+    override fun onVideoSizeChanged(videoSize: VideoSize) {
+        super<Player.Listener>.onVideoSizeChanged(videoSize)
         OAVTLog.verbose("-----> onVideoSizeChanged")
         checkResolutionChange()
     }
