@@ -5,6 +5,7 @@ import com.openavt.core.assets.DummyTracker
 import com.openavt.core.hubs.OAVTHubCore
 import com.openavt.core.models.OAVTAction
 import com.openavt.core.models.OAVTAttribute
+import com.openavt.core.models.OAVTEvent
 import com.openavt.core.models.OAVTState
 import com.openavt.core.utils.OAVTAssert.Companion.assertEquals
 import com.openavt.core.utils.OAVTAssert.Companion.assertStates
@@ -365,9 +366,98 @@ class CoreUnitTest {
         assertEquals(errorEvent3.attributes[OAVTAttribute.countErrors] as Int, 3)
     }
 
-    //TODO: test accumulated times
-    //TODO: test in block attributes
-    //TODO: multiple consecutive playbacks
+    @Test
+    fun accumulated_times() {
+        val (instrument, trackerId) = createInstrument()
+        val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
+
+        instrument.emit(OAVTAction.StreamLoad, trackerId)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+        Thread.sleep(800)
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+
+        instrument.emit(OAVTAction.PauseBegin, trackerId)
+        Thread.sleep(1500)
+        instrument.emit(OAVTAction.PauseFinish, trackerId)
+
+        instrument.emit(OAVTAction.PauseBegin, trackerId)
+        instrument.emit(OAVTAction.SeekBegin, trackerId)
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+        Thread.sleep(1000)
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+        instrument.emit(OAVTAction.SeekFinish, trackerId)
+        instrument.emit(OAVTAction.PauseFinish, trackerId)
+
+        instrument.emit(OAVTAction.End, trackerId)
+        val endEvent1 = backend.getLastEvent()!!
+        assertEquals(endEvent1.attributes[OAVTAttribute.accumBufferTime] as Long, 1800, 50)
+        assertEquals(endEvent1.attributes[OAVTAttribute.accumPauseTime] as Long, 2500, 50)
+        assertEquals(endEvent1.attributes[OAVTAttribute.accumSeekTime] as Long, 1000, 50)
+    }
+
+    @Test
+    fun in_blocks() {
+        val (instrument, trackerId) = createInstrument()
+        val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
+        var event: OAVTEvent
+
+        instrument.emit(OAVTAction.StreamLoad, trackerId)
+        event = backend.getLastEvent()!!
+        assertFalse(event.attributes[OAVTAttribute.inPlaybackBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inPauseBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inBufferBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inSeekBlock] as Boolean)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+        event = backend.getLastEvent()!!
+        assertFalse(event.attributes[OAVTAttribute.inPlaybackBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inPauseBlock] as Boolean)
+        assertTrue(event.attributes[OAVTAttribute.inBufferBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inSeekBlock] as Boolean)
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+        event = backend.getLastEvent()!!
+        assertTrue(event.attributes[OAVTAttribute.inPlaybackBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inPauseBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inBufferBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inSeekBlock] as Boolean)
+
+        instrument.emit(OAVTAction.PauseBegin, trackerId)
+        event = backend.getLastEvent()!!
+        assertTrue(event.attributes[OAVTAttribute.inPlaybackBlock] as Boolean)
+        assertTrue(event.attributes[OAVTAttribute.inPauseBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inBufferBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inSeekBlock] as Boolean)
+        instrument.emit(OAVTAction.PauseFinish, trackerId)
+
+        instrument.emit(OAVTAction.PauseBegin, trackerId)
+        instrument.emit(OAVTAction.SeekBegin, trackerId)
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+        event = backend.getLastEvent()!!
+        assertTrue(event.attributes[OAVTAttribute.inPlaybackBlock] as Boolean)
+        assertTrue(event.attributes[OAVTAttribute.inPauseBlock] as Boolean)
+        assertTrue(event.attributes[OAVTAttribute.inBufferBlock] as Boolean)
+        assertTrue(event.attributes[OAVTAttribute.inSeekBlock] as Boolean)
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+        instrument.emit(OAVTAction.SeekFinish, trackerId)
+        instrument.emit(OAVTAction.PauseFinish, trackerId)
+        event = backend.getLastEvent()!!
+        assertTrue(event.attributes[OAVTAttribute.inPlaybackBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inPauseBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inBufferBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inSeekBlock] as Boolean)
+
+        instrument.emit(OAVTAction.End, trackerId)
+        event = backend.getLastEvent()!!
+        assertFalse(event.attributes[OAVTAttribute.inPlaybackBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inPauseBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inBufferBlock] as Boolean)
+        assertFalse(event.attributes[OAVTAttribute.inSeekBlock] as Boolean)
+    }
 
     private fun createInstrument(): Pair<OAVTInstrument, Int> {
         val instrument = OAVTInstrument(OAVTHubCore(), DummyBackend())
