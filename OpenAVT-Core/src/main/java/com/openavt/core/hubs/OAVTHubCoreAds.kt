@@ -13,7 +13,12 @@ open class OAVTHubCoreAds: OAVTHubCore() {
 
     override fun processEvent(event: OAVTEvent, tracker: OAVTTrackerInterface): OAVTEvent? {
         if (event.action == OAVTAction.AdBreakBegin) {
-            setInAdBreakState(true)
+            if (!tracker.state.inAdBreak) {
+                setInAdBreakState(true)
+            }
+            else {
+                return null
+            }
         }
         else if (event.action == OAVTAction.AdBreakFinish) {
             if (tracker.state.inAdBreak) {
@@ -24,13 +29,18 @@ open class OAVTHubCoreAds: OAVTHubCore() {
             }
         }
         else if (event.action == OAVTAction.AdBegin) {
-            instrument?.startPing(tracker.trackerId!!, 30L)
-            setInAdState(true)
-            countAds = countAds + 1
+            if (!tracker.state.inAd) {
+                instrument?.startPing(tracker.trackerId!!, 30L)
+                setInAdState(true)
+                countAds++
+            }
+            else {
+                return null
+            }
         }
         else if (event.action == OAVTAction.AdFinish) {
-            instrument?.stopPing(tracker.trackerId!!)
             if (tracker.state.inAd) {
+                instrument?.stopPing(tracker.trackerId!!)
                 setInAdState(false)
             }
             else {
