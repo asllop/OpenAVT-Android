@@ -8,6 +8,7 @@ import com.openavt.core.models.OAVTAction
 import com.openavt.core.models.OAVTAttribute
 import com.openavt.core.models.OAVTState
 import com.openavt.core.utils.OAVTAssert.Companion.assertEquals
+import com.openavt.core.utils.OAVTAssert.Companion.assertStates
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -33,55 +34,55 @@ class CoreUnitTest {
 
         instrument.emit(OAVTAction.MediaRequest, trackerId)
         compareState.didMediaRequest = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.PlayerSet, trackerId)
         compareState.didPlayerSet = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.StreamLoad, trackerId)
         compareState.didStreamLoad = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.BufferBegin, trackerId)
         compareState.isBuffering = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.BufferFinish, trackerId)
         compareState.isBuffering = false
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.Start, trackerId)
         compareState.didStart = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.PauseBegin, trackerId)
         compareState.isPaused = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.SeekBegin, trackerId)
         compareState.isSeeking = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.BufferBegin, trackerId)
         compareState.isBuffering = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.BufferFinish, trackerId)
         compareState.isBuffering = false
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.SeekFinish, trackerId)
         compareState.isSeeking = false
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.PauseFinish, trackerId)
         compareState.isPaused = false
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.End, trackerId)
         compareState.didFinish = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
     }
 
     /**
@@ -148,56 +149,56 @@ class CoreUnitTest {
         instrument.emit(OAVTAction.MediaRequest, trackerId)
         instrument.emit(OAVTAction.MediaRequest, trackerId) // Repeated event
         compareState.didMediaRequest = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.PlayerSet, trackerId)
         compareState.didPlayerSet = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.StreamLoad, trackerId)
         compareState.didStreamLoad = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.BufferBegin, trackerId)
         instrument.emit(OAVTAction.BufferBegin, trackerId) // Repeated event
         compareState.isBuffering = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.BufferFinish, trackerId)
         compareState.isBuffering = false
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.Start, trackerId)
         compareState.didStart = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.PauseBegin, trackerId)
         compareState.isPaused = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.SeekBegin, trackerId)
         compareState.isSeeking = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.BufferBegin, trackerId)
         compareState.isBuffering = true
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.BufferFinish, trackerId)
         compareState.isBuffering = false
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         // Missing SeekFinish
         instrument.emit(OAVTAction.Ping, trackerId)
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         instrument.emit(OAVTAction.PauseFinish, trackerId)
         compareState.isPaused = false
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
 
         // Missing End
         instrument.emit(OAVTAction.Ping, trackerId)
-        check_states(tracker, compareState)
+        assertStates(tracker, compareState)
     }
 
     /**
@@ -371,19 +372,6 @@ class CoreUnitTest {
     //TODO: test accumulated times
     //TODO: test in block attributes
     //TODO: multiple consecutive playbacks
-
-    private fun check_states(tracker: OAVTTrackerInterface, compareState: OAVTState) {
-        assertEquals(tracker.state.didMediaRequest, compareState.didMediaRequest)
-        assertEquals(tracker.state.didPlayerSet, compareState.didPlayerSet)
-        assertEquals(tracker.state.didStreamLoad, compareState.didStreamLoad)
-        assertEquals(tracker.state.didStart, compareState.didStart)
-        assertEquals(tracker.state.isBuffering, compareState.isBuffering)
-        assertEquals(tracker.state.isPaused, compareState.isPaused)
-        assertEquals(tracker.state.isSeeking, compareState.isSeeking)
-        assertEquals(tracker.state.didFinish, compareState.didFinish)
-        assertEquals(tracker.state.inAdBreak, compareState.inAdBreak)
-        assertEquals(tracker.state.inAd, compareState.inAd)
-    }
 
     private fun createInstrument(): Pair<OAVTInstrument, Int> {
         val instrument = OAVTInstrument(OAVTHubCore(), DummyBackend())
