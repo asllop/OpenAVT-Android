@@ -5,6 +5,7 @@ import com.openavt.core.assets.DummyTracker
 import com.openavt.core.hubs.OAVTHubCore
 import com.openavt.core.interfaces.OAVTTrackerInterface
 import com.openavt.core.models.OAVTAction
+import com.openavt.core.models.OAVTAttribute
 import com.openavt.core.models.OAVTState
 import com.openavt.core.utils.OAVTAssert.Companion.assertEquals
 import org.junit.Test
@@ -12,14 +13,12 @@ import org.junit.Test
 import org.junit.Assert.*
 
 class CoreUnitTest {
-    private var instrument: OAVTInstrument = OAVTInstrument(OAVTHubCore(), DummyBackend())
-    private var trackerId: Int = instrument.addTracker(DummyTracker())
-
     /**
      * Check tracker Id of a new tracker.
      */
     @Test
     fun trackedId_integrity() {
+        val (instrument, trackerId) = createInstrument()
         assertEquals(trackerId, instrument.getTracker(trackerId)!!.trackerId)
     }
 
@@ -28,8 +27,9 @@ class CoreUnitTest {
      */
     @Test
     fun player_state() {
+        val (instrument, trackerId) = createInstrument()
         val tracker = instrument.getTracker(trackerId)!!
-        var compareState = OAVTState()
+        val compareState = OAVTState()
 
         instrument.emit(OAVTAction.MediaRequest, trackerId)
         compareState.didMediaRequest = true
@@ -82,9 +82,6 @@ class CoreUnitTest {
         instrument.emit(OAVTAction.End, trackerId)
         compareState.didFinish = true
         check_states(tracker, compareState)
-
-        // Reset for next test
-        tracker.state.reset()
     }
 
     /**
@@ -92,6 +89,7 @@ class CoreUnitTest {
      */
     @Test
     fun event_workflow() {
+        val (instrument, trackerId) = createInstrument()
         val tracker = instrument.getTracker(trackerId)!!
         val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
 
@@ -136,9 +134,6 @@ class CoreUnitTest {
 
         instrument.emit(OAVTAction.End, trackerId)
         assertEquals(backend.getLastEvent()!!.action, OAVTAction.End)
-
-        // Reset for next test
-        tracker.state.reset()
     }
 
     /**
@@ -146,8 +141,9 @@ class CoreUnitTest {
      */
     @Test
     fun player_state_mistakes() {
+        val (instrument, trackerId) = createInstrument()
         val tracker = instrument.getTracker(trackerId)!!
-        var compareState = OAVTState()
+        val compareState = OAVTState()
 
         instrument.emit(OAVTAction.MediaRequest, trackerId)
         instrument.emit(OAVTAction.MediaRequest, trackerId) // Repeated event
@@ -202,9 +198,6 @@ class CoreUnitTest {
         // Missing End
         instrument.emit(OAVTAction.Ping, trackerId)
         check_states(tracker, compareState)
-
-        // Reset for next test
-        tracker.state.reset()
     }
 
     /**
@@ -212,6 +205,7 @@ class CoreUnitTest {
      */
     @Test
     fun event_workflow_mistakes() {
+        val (instrument, trackerId) = createInstrument()
         val tracker = instrument.getTracker(trackerId)!!
         val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
 
@@ -271,13 +265,11 @@ class CoreUnitTest {
 
         instrument.emit(OAVTAction.PauseBegin, trackerId) // Block after an End
         assertNull(backend.getLastEvent())
-
-        // Reset for next test
-        tracker.state.reset()
     }
 
     @Test
     fun time_since_attributes() {
+        val (instrument, trackerId) = createInstrument()
         val tracker = instrument.getTracker(trackerId)!!
         val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
 
@@ -333,12 +325,49 @@ class CoreUnitTest {
 
         instrument.emit(OAVTAction.End, trackerId)
         assertEquals(backend.getLastEvent()!!.action, OAVTAction.End)
-
-        // Reset for next test
-        tracker.state.reset()
     }
-    
-    //TODO: test counters
+
+    @Test
+    fun counters() {
+        val (instrument, trackerId) = createInstrument()
+        val tracker = instrument.getTracker(trackerId)!!
+        val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
+
+        instrument.emit(OAVTAction.StreamLoad, trackerId)
+        val sloadEvent1 = backend.getLastEvent()!!
+        assertEquals(sloadEvent1.attributes[OAVTAttribute.countStarts] as Int, 0)
+        assertEquals(sloadEvent1.attributes[OAVTAttribute.countErrors] as Int, 0)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+        val startEvent1 = backend.getLastEvent()!!
+        assertEquals(startEvent1.attributes[OAVTAttribute.countStarts] as Int, 1)
+        assertEquals(startEvent1.attributes[OAVTAttribute.countErrors] as Int, 0)
+
+        instrument.emit(OAVTAction.Error, trackerId)
+        val errorEvent1 = backend.getLastEvent()!!
+        assertEquals(errorEvent1.attributes[OAVTAttribute.countStarts] as Int, 1)
+        assertEquals(errorEvent1.attributes[OAVTAttribute.countErrors] as Int, 1)
+
+        instrument.emit(OAVTAction.Ping, trackerId)
+
+        instrument.emit(OAVTAction.Error, trackerId)
+        val errorEvent2 = backend.getLastEvent()!!
+        assertEquals(errorEvent2.attributes[OAVTAttribute.countStarts] as Int, 1)
+        assertEquals(errorEvent2.attributes[OAVTAttribute.countErrors] as Int, 2)
+
+        instrument.emit(OAVTAction.End, trackerId)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+        val startEvent2 = backend.getLastEvent()!!
+        assertEquals(startEvent2.attributes[OAVTAttribute.countStarts] as Int, 2)
+        assertEquals(startEvent2.attributes[OAVTAttribute.countErrors] as Int, 2)
+
+        instrument.emit(OAVTAction.Error, trackerId)
+        val errorEvent3 = backend.getLastEvent()!!
+        assertEquals(errorEvent3.attributes[OAVTAttribute.countStarts] as Int, 2)
+        assertEquals(errorEvent3.attributes[OAVTAttribute.countErrors] as Int, 3)
+    }
+
     //TODO: test accumulated times
     //TODO: test in block attributes
     //TODO: multiple consecutive playbacks
@@ -354,5 +383,11 @@ class CoreUnitTest {
         assertEquals(tracker.state.didFinish, compareState.didFinish)
         assertEquals(tracker.state.inAdBreak, compareState.inAdBreak)
         assertEquals(tracker.state.inAd, compareState.inAd)
+    }
+
+    private fun createInstrument(): Pair<OAVTInstrument, Int> {
+        val instrument = OAVTInstrument(OAVTHubCore(), DummyBackend())
+        val trackerId = instrument.addTracker(DummyTracker())
+        return Pair(instrument, trackerId)
     }
 }
