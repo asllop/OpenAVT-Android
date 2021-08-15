@@ -5,6 +5,7 @@ import com.openavt.core.assets.DummyBackend
 import com.openavt.core.assets.DummyTracker
 import com.openavt.core.hubs.OAVTHubCoreAds
 import com.openavt.core.models.OAVTAction
+import com.openavt.core.models.OAVTAttribute
 import com.openavt.core.models.OAVTState
 import com.openavt.core.utils.OAVTAssert.Companion.assertEquals
 import com.openavt.core.utils.OAVTAssert.Companion.assertStates
@@ -466,6 +467,72 @@ class AdsUnitTest {
         instrument.emit(OAVTAction.Start, trackerId)
 
         instrument.emit(OAVTAction.End, trackerId)
+    }
+
+    /**
+     * Test counter attributes (countAds).
+     */
+    @Test
+    fun ad_counters() {
+        val (instrument, trackerId, adTrackerId) = createInstrument()
+        val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
+
+        instrument.emit(OAVTAction.StreamLoad, trackerId)
+        val sloadEvent = backend.getLastEvent()!!
+        assertEquals(sloadEvent.action, OAVTAction.StreamLoad)
+        assertEquals(sloadEvent.attributes[OAVTAttribute.countAds] as Int, 0)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+
+        // Pre-roll ad break (1 ad)
+        instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+
+        instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
+        val adBreakFinish1 = backend.getLastEvent()!!
+        assertEquals(adBreakFinish1.action, OAVTAction.AdBreakFinish)
+        assertEquals(adBreakFinish1.attributes[OAVTAttribute.countAds] as Int, 1)
+
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+
+        // Mid-roll ad break (2 ads)
+        instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+
+        instrument.emit(OAVTAction.AdPauseBegin, adTrackerId)
+
+        instrument.emit(OAVTAction.AdPauseFinish, adTrackerId)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+
+        instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
+        val adBreakFinish2 = backend.getLastEvent()!!
+        assertEquals(adBreakFinish2.action, OAVTAction.AdBreakFinish)
+        assertEquals(adBreakFinish2.attributes[OAVTAttribute.countAds] as Int, 3)
+
+        instrument.emit(OAVTAction.End, trackerId)
+
+        // Post-roll ad break (1 ad)
+        instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+
+        instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
+        val adBreakFinish3 = backend.getLastEvent()!!
+        assertEquals(adBreakFinish3.action, OAVTAction.AdBreakFinish)
+        assertEquals(adBreakFinish3.attributes[OAVTAttribute.countAds] as Int, 4)
     }
 
     private fun createInstrument(): Triple<OAVTInstrument, Int, Int> {
