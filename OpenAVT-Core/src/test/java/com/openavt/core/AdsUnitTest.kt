@@ -6,7 +6,7 @@ import com.openavt.core.assets.DummyTracker
 import com.openavt.core.hubs.OAVTHubCoreAds
 import com.openavt.core.models.OAVTAction
 import com.openavt.core.models.OAVTState
-import com.openavt.core.utils.OAVTAssert
+import com.openavt.core.utils.OAVTAssert.Companion.assertStates
 import org.junit.Test
 import org.junit.Assert.*
 
@@ -25,7 +25,7 @@ class AdsUnitTest {
      * Test tracker state with correct events.
      */
     @Test
-    fun player_state() {
+    fun ads_state() {
         val (instrument, trackerId, adTrackerId) = createInstrument()
         val tracker = instrument.getTracker(trackerId)!!
         val adTracker = instrument.getTracker(adTrackerId)!!
@@ -48,26 +48,26 @@ class AdsUnitTest {
         instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
         compareState.inAdBreak = true
         compareAdState.inAdBreak = true
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdBegin, adTrackerId)
         compareState.inAd = true
         compareAdState.inAd = true
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdFinish, adTrackerId)
         compareState.inAd = false
         compareAdState.inAd = false
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
         compareState.inAdBreak = false
         compareAdState.inAdBreak = false
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.BufferFinish, trackerId)
         compareState.isBuffering = false
@@ -79,38 +79,38 @@ class AdsUnitTest {
         instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
         compareState.inAdBreak = true
         compareAdState.inAdBreak = true
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdBegin, adTrackerId)
         compareState.inAd = true
         compareAdState.inAd = true
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdFinish, adTrackerId)
         compareState.inAd = false
         compareAdState.inAd = false
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdBegin, adTrackerId)
         compareState.inAd = true
         compareAdState.inAd = true
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdFinish, adTrackerId)
         compareState.inAd = false
         compareAdState.inAd = false
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
         compareState.inAdBreak = false
         compareAdState.inAdBreak = false
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.End, trackerId)
         compareState.didFinish = true
@@ -119,31 +119,90 @@ class AdsUnitTest {
         instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
         compareState.inAdBreak = true
         compareAdState.inAdBreak = true
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdBegin, adTrackerId)
         compareState.inAd = true
         compareAdState.inAd = true
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdFinish, adTrackerId)
         compareState.inAd = false
         compareAdState.inAd = false
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
 
         instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
         compareState.inAdBreak = false
         compareAdState.inAdBreak = false
-        OAVTAssert.assertStates(tracker, compareState)
-        OAVTAssert.assertStates(adTracker, compareAdState)
+        assertStates(tracker, compareState)
+        assertStates(adTracker, compareAdState)
     }
 
+    /**
+     * Test a correct event workflow.
+     */
     @Test
-    fun basic_ads_workflow() {
-        //TODO
+    fun ad_event_workflow() {
+        val (instrument, trackerId, adTrackerId) = createInstrument()
+        val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
+
+        instrument.emit(OAVTAction.StreamLoad, trackerId)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+
+        // Pre-roll ad break (1 ad)
+        instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBreakBegin)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBegin)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdFinish)
+
+        instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBreakFinish)
+
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+
+        // Mid-roll ad break (2 ads)
+        instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBreakBegin)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBegin)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdFinish)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBegin)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdFinish)
+
+        instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBreakFinish)
+
+        instrument.emit(OAVTAction.End, trackerId)
+
+        // Post-roll ad break (1 ad)
+        instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBreakBegin)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBegin)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdFinish)
+
+        instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBreakFinish)
     }
 
     private fun createInstrument(): Triple<OAVTInstrument, Int, Int> {

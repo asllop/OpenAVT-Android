@@ -28,11 +28,15 @@ class DummyBackend: OAVTBackendInterface {
     }
 
     fun getLastMetric(): OAVTMetric? {
-        if (latestMetrics.size > 0) {
-            return latestMetrics.removeLast()
+        return if (latestMetrics.size > 0) {
+            latestMetrics.removeLast()
         }
         else {
-            return null
+            null
         }
+    }
+
+    fun clearMetrics() {
+        latestMetrics.clear()
     }
 }
