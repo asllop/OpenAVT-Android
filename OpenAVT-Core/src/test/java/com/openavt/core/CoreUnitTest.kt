@@ -10,7 +10,6 @@ import com.openavt.core.models.OAVTState
 import com.openavt.core.utils.OAVTAssert.Companion.assertEquals
 import com.openavt.core.utils.OAVTAssert.Companion.assertStates
 import org.junit.Test
-
 import org.junit.Assert.*
 
 class CoreUnitTest {
@@ -266,6 +265,9 @@ class CoreUnitTest {
         assertNull(backend.getLastEvent())
     }
 
+    /**
+     * Test Time Since attributes.
+     */
     @Test
     fun time_since_attributes() {
         val (instrument, trackerId) = createInstrument()
@@ -325,6 +327,9 @@ class CoreUnitTest {
         assertEquals(backend.getLastEvent()!!.action, OAVTAction.End)
     }
 
+    /**
+     * Test counter attributes (countStarts and countErrors).
+     */
     @Test
     fun counters() {
         val (instrument, trackerId) = createInstrument()
@@ -366,6 +371,9 @@ class CoreUnitTest {
         assertEquals(errorEvent3.attributes[OAVTAttribute.countErrors] as Int, 3)
     }
 
+    /**
+     * Test accumulated time attributes (accumBufferTime, accumPauseTime and accumSeekTime).
+     */
     @Test
     fun accumulated_times() {
         val (instrument, trackerId) = createInstrument()
@@ -398,6 +406,9 @@ class CoreUnitTest {
         assertEquals(endEvent1.attributes[OAVTAttribute.accumSeekTime] as Long, 1000, 50)
     }
 
+    /**
+     * Test block flag attributes (inPlaybackBlock, inPauseBlock, inBufferBlock and inSeekBlock).
+     */
     @Test
     fun in_blocks() {
         val (instrument, trackerId) = createInstrument()
@@ -462,6 +473,7 @@ class CoreUnitTest {
     private fun createInstrument(): Pair<OAVTInstrument, Int> {
         val instrument = OAVTInstrument(OAVTHubCore(), DummyBackend())
         val trackerId = instrument.addTracker(DummyTracker())
+        instrument.ready()
         return Pair(instrument, trackerId)
     }
 }
