@@ -6,6 +6,7 @@ import com.openavt.core.assets.DummyTracker
 import com.openavt.core.hubs.OAVTHubCoreAds
 import com.openavt.core.models.OAVTAction
 import com.openavt.core.models.OAVTState
+import com.openavt.core.utils.OAVTAssert.Companion.assertEquals
 import com.openavt.core.utils.OAVTAssert.Companion.assertStates
 import org.junit.Test
 import org.junit.Assert.*
@@ -396,6 +397,9 @@ class AdsUnitTest {
         instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
         assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBreakFinish)
 
+        instrument.emit(OAVTAction.AdBreakFinish, adTrackerId) // Repeated event
+        assertNull(backend.getLastEvent())
+
         instrument.emit(OAVTAction.End, trackerId)
         backend.getLastEvent()
 
@@ -408,6 +412,60 @@ class AdsUnitTest {
         assertNull(backend.getLastEvent())
         instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
         assertNull(backend.getLastEvent())
+    }
+
+    /**
+     * Test Time Since attributes.
+     */
+    @Test
+    fun ad_time_since_attributes() {
+        val (instrument, trackerId, adTrackerId) = createInstrument()
+        val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
+
+        instrument.emit(OAVTAction.StreamLoad, trackerId)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+
+        // Pre-roll ad break (1 ad)
+        instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdBreakBegin)
+
+        Thread.sleep(500)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+        val adBeginEvent = backend.getLastEvent()!!
+        assertEquals(adBeginEvent.action, OAVTAction.AdBegin)
+        assertEquals(adBeginEvent.attributes[OAVTAction.AdBreakBegin.timeAttribute] as Long, 500, 50)
+
+        Thread.sleep(1000)
+
+        instrument.emit(OAVTAction.AdPauseBegin, adTrackerId)
+        assertEquals(backend.getLastEvent()!!.action, OAVTAction.AdPauseBegin)
+
+        Thread.sleep(600)
+
+        instrument.emit(OAVTAction.AdPauseFinish, adTrackerId)
+        val adPauseEvent = backend.getLastEvent()!!
+        assertEquals(adPauseEvent.action, OAVTAction.AdPauseFinish)
+        assertEquals(adPauseEvent.attributes[OAVTAction.AdPauseBegin.timeAttribute] as Long, 600, 50)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+        val adFinishEvent = backend.getLastEvent()!!
+        assertEquals(adFinishEvent.action, OAVTAction.AdFinish)
+        assertEquals(adFinishEvent.attributes[OAVTAction.AdBegin.timeAttribute] as Long, 1600, 50)
+
+        Thread.sleep(300)
+
+        instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
+        val adBreakFinishEvent = backend.getLastEvent()!!
+        assertEquals(adBreakFinishEvent.action, OAVTAction.AdBreakFinish)
+        assertEquals(adBreakFinishEvent.attributes[OAVTAction.AdBreakBegin.timeAttribute] as Long, 2400, 50)
+
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+
+        instrument.emit(OAVTAction.End, trackerId)
     }
 
     private fun createInstrument(): Triple<OAVTInstrument, Int, Int> {
