@@ -29,7 +29,7 @@ open class OAVTHubCoreAds: OAVTHubCore() {
             }
         }
         else if (event.action == OAVTAction.AdBegin) {
-            if (!tracker.state.inAd) {
+            if (!tracker.state.inAd && tracker.state.inAdBreak) {
                 instrument?.startPing(tracker.trackerId!!, 30L)
                 setInAdState(true)
                 countAds++
@@ -39,7 +39,7 @@ open class OAVTHubCoreAds: OAVTHubCore() {
             }
         }
         else if (event.action == OAVTAction.AdFinish) {
-            if (tracker.state.inAd) {
+            if (tracker.state.inAd && tracker.state.inAdBreak) {
                 instrument?.stopPing(tracker.trackerId!!)
                 setInAdState(false)
             }
@@ -54,7 +54,7 @@ open class OAVTHubCoreAds: OAVTHubCore() {
             }
         }
         else if (event.action == OAVTAction.AdPauseBegin) {
-            if (!tracker.state.isPaused) {
+            if (!tracker.state.isPaused && tracker.state.inAd) {
                 tracker.state.isPaused = true
             }
             else {
@@ -62,7 +62,7 @@ open class OAVTHubCoreAds: OAVTHubCore() {
             }
         }
         else if (event.action == OAVTAction.AdPauseFinish) {
-            if (tracker.state.isPaused) {
+            if (tracker.state.isPaused && tracker.state.inAd) {
                 tracker.state.isPaused = false
             }
             else {
