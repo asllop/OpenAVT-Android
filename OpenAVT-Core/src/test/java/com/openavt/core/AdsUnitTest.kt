@@ -535,6 +535,54 @@ class AdsUnitTest {
         assertEquals(adBreakFinish3.attributes[OAVTAttribute.countAds] as Int, 4)
     }
 
+    /**
+     * Test block flag attributes (inAdBlock and inAdBreakBlock).
+     */
+    @Test
+    fun in_blocks() {
+        val (instrument, trackerId, adTrackerId) = createInstrument()
+        val backend: DummyBackend = (instrument.getBackend() as DummyBackend?)!!
+
+        instrument.emit(OAVTAction.StreamLoad, trackerId)
+        val sloadEvent = backend.getLastEvent()!!
+        assertEquals(sloadEvent.action, OAVTAction.StreamLoad)
+        assertFalse(sloadEvent.attributes[OAVTAttribute.inAdBreakBlock] as Boolean)
+        assertFalse(sloadEvent.attributes[OAVTAttribute.inAdBlock] as Boolean)
+
+        instrument.emit(OAVTAction.BufferBegin, trackerId)
+
+        // Pre-roll ad break (1 ad)
+        instrument.emit(OAVTAction.AdBreakBegin, adTrackerId)
+        val adBreakBeginEvent1 = backend.getLastEvent()!!
+        assertEquals(adBreakBeginEvent1.action, OAVTAction.AdBreakBegin)
+        assertTrue(adBreakBeginEvent1.attributes[OAVTAttribute.inAdBreakBlock] as Boolean)
+        assertFalse(adBreakBeginEvent1.attributes[OAVTAttribute.inAdBlock] as Boolean)
+
+        instrument.emit(OAVTAction.AdBegin, adTrackerId)
+        val adBeginEvent1 = backend.getLastEvent()!!
+        assertEquals(adBeginEvent1.action, OAVTAction.AdBegin)
+        assertTrue(adBeginEvent1.attributes[OAVTAttribute.inAdBreakBlock] as Boolean)
+        assertTrue(adBeginEvent1.attributes[OAVTAttribute.inAdBlock] as Boolean)
+
+        instrument.emit(OAVTAction.AdFinish, adTrackerId)
+        val adFinishEvent1 = backend.getLastEvent()!!
+        assertEquals(adFinishEvent1.action, OAVTAction.AdFinish)
+        assertTrue(adFinishEvent1.attributes[OAVTAttribute.inAdBreakBlock] as Boolean)
+        assertFalse(adFinishEvent1.attributes[OAVTAttribute.inAdBlock] as Boolean)
+
+        instrument.emit(OAVTAction.AdBreakFinish, adTrackerId)
+        val adBreakFinishEvent1 = backend.getLastEvent()!!
+        assertEquals(adBreakFinishEvent1.action, OAVTAction.AdBreakFinish)
+        assertFalse(adBreakFinishEvent1.attributes[OAVTAttribute.inAdBreakBlock] as Boolean)
+        assertFalse(adBreakFinishEvent1.attributes[OAVTAttribute.inAdBlock] as Boolean)
+
+        instrument.emit(OAVTAction.BufferFinish, trackerId)
+
+        instrument.emit(OAVTAction.Start, trackerId)
+
+        instrument.emit(OAVTAction.End, trackerId)
+    }
+
     private fun createInstrument(): Triple<OAVTInstrument, Int, Int> {
         val instrument = OAVTInstrument(OAVTHubCoreAds(), DummyBackend())
         val trackerId = instrument.addTracker(DummyTracker())
