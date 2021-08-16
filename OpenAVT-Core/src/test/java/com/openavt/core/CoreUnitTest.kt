@@ -2,11 +2,9 @@ package com.openavt.core
 
 import com.openavt.core.assets.DummyBackend
 import com.openavt.core.assets.DummyTracker
+import com.openavt.core.buffers.OAVTBuffer
 import com.openavt.core.hubs.OAVTHubCore
-import com.openavt.core.models.OAVTAction
-import com.openavt.core.models.OAVTAttribute
-import com.openavt.core.models.OAVTEvent
-import com.openavt.core.models.OAVTState
+import com.openavt.core.models.*
 import com.openavt.core.utils.OAVTAssert.Companion.assertEquals
 import com.openavt.core.utils.OAVTAssert.Companion.assertStates
 import org.junit.Test
@@ -468,6 +466,44 @@ class CoreUnitTest {
         assertFalse(event.attributes[OAVTAttribute.inPauseBlock] as Boolean)
         assertFalse(event.attributes[OAVTAttribute.inBufferBlock] as Boolean)
         assertFalse(event.attributes[OAVTAttribute.inSeekBlock] as Boolean)
+    }
+
+    /**
+     * Test sample buffers.
+     */
+    @Test
+    fun buffers() {
+        val simpleBuffer = OAVTBuffer(4)
+
+        assertTrue(simpleBuffer.put(OAVTEvent(OAVTAction.Start)))
+
+        Thread.sleep(50)
+
+        assertTrue(simpleBuffer.put(OAVTEvent(OAVTAction.BufferBegin)))
+
+        Thread.sleep(50)
+
+        assertTrue(simpleBuffer.put(OAVTEvent(OAVTAction.BufferFinish)))
+
+        Thread.sleep(50)
+
+        assertTrue(simpleBuffer.put(OAVTEvent(OAVTAction.End)))
+
+        Thread.sleep(50)
+
+        assertFalse(simpleBuffer.put(OAVTEvent(OAVTAction.Ping)))
+
+        Thread.sleep(50)
+
+        assertTrue(simpleBuffer.set(0, OAVTEvent(OAVTAction.Error)))
+
+        val samples = simpleBuffer.retrieveInOrder()
+        assertEquals((samples[0] as OAVTEvent).action, OAVTAction.BufferBegin)
+        assertEquals((samples[1] as OAVTEvent).action, OAVTAction.BufferFinish)
+        assertEquals((samples[2] as OAVTEvent).action, OAVTAction.End)
+        assertEquals((samples[3] as OAVTEvent).action, OAVTAction.Error)
+
+        //NOTE: Can't test reservoir buffer because is not predictable, due to it's random nature.
     }
 
     private fun createInstrument(): Pair<OAVTInstrument, Int> {
